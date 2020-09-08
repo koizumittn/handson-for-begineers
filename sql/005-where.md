@@ -21,7 +21,6 @@ shopテーブルよりlocationカラムの値が「東京」であるレコー�
 SELECT * FROM shop WHERE location = '東京';
 ```
 
-以下のように指定したカラムのデータを得られます。  
 ![WHERE句](https://user-images.githubusercontent.com/22129880/92434432-bdefdf00-f1da-11ea-9744-c8e5e311a697.png)
 
 画像のようにlocationカラムの値が東京であるレコードのみ抽出されていることがわかると思います。  

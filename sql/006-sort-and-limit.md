@@ -22,8 +22,7 @@ shopテーブルのレコードを月間売上高(salesカラム)が高い順に
 ```sql
 SELECT name, sales FROM shop ORDER BY sales DESC; 
 ```
-
-以下のように指定したカラムのデータを得られます。  
+  
 ![ORDER BY句](https://user-images.githubusercontent.com/22129880/92437609-4de55700-f1e2-11ea-8bea-069ce1ef80f6.png)
 
 画像のようにsalesカラムの値が大きい順にレコードが並び替えられていることがわかると思います。  
