@@ -3,8 +3,8 @@
 SQL Fiddleはインターネット上で提供されるサービスで、自分でデータベースを構築しなくても気軽にSQLを試すことができます。
 
 ## SQL Fiddleへのアクセス
-[こちら](http://sqlfiddle.com/)にアクセスしてください。
-(新しいタブで開くと作業しやすいです。)
+[こちら](http://sqlfiddle.com/)にアクセスしてください。(新しいタブで開くと作業しやすいです。)  
+以降のステップではSQL Fiddle上にSQL文を入力し、実行していきます。  
 
 ## 画面構成
 ![SQL Fiddle](https://user-images.githubusercontent.com/22129880/92338359-da145300-f0ea-11ea-86cf-d8213cd7b5fe.png)
