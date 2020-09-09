@@ -7,7 +7,7 @@ SELECT * FROM visit WHERE rank = 5;
 ```
 
 2. shopテーブルよりlocationカラムが「東京」かつsalesカラムの値が200よりも大きいレコードを抽出してみましょう。  
-さらに、表示するカラムをname, locationn, salesに絞り込んでください。  
+さらに、表示するカラムをname, location, salesに絞り込んでください。  
 
 ```sql
 SELECT name, location, sales FROM shop WHERE location = '東京' AND sales > 200;
