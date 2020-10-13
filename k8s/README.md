@@ -12,6 +12,6 @@ GCP(Google Cloud Platform)を使用します。
 それではステップ1から順番に進めていきましょう！  
 
 ## 目次
-|ステップ|タイトル|
-| --- | --- |
-| 1 | [![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://ssh.cloud.google.com/cloudshell/open?cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/create_gke_cluster.md.md) |
+|ステップ|タイトル|リンク|
+| --- | --- | --- |
+| 1 | [ GKEクラスタの作成 | ![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://ssh.cloud.google.com/cloudshell/open?cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/create_gke_cluster.md) |
