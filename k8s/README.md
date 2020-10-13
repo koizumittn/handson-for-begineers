@@ -14,5 +14,5 @@ GCP(Google Cloud Platform)を使用します。
 ## 目次
 |ステップ|タイトル|リンク|
 | --- | --- | --- |
-| 1 | GKEクラスタの作成 | [![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/create_gke_cluster.md) |
+| 1 | GKEクラスタの作成 | [![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/create-gke-cluster.md) |
 | 2 | コンテナWebアプリケーションのデプロイ | [![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/hello-app.md) |

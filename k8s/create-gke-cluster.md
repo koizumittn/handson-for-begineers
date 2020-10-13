@@ -14,7 +14,7 @@
 
 **所要時間**: 約 10 分
 
-**[続行]** ボタンをクリックして次のステップに進みます。
+**[開始]** ボタンをクリックして次のステップに進みます。
 
 ## デフォルトプロジェクトの設定
 ### プロジェクトIDの確認
@@ -28,7 +28,8 @@ gcloud projects list
 ### デフォルトプロジェクトの設定
 
 今回使用するGCPプロジェクトを Cloud Shell のデフォルトプロジェクトに設定するために、次のコマンドを実行します。
-<YOUR-PROJECT-ID>は前のステップで確認したプロジェクトIDに置き換えます。
+
+「YOUR-PROJECT-ID」は前のステップで確認したプロジェクトIDに置き換えます。
 
 ```bash
 gcloud config set project <YOUR-PROJECT-ID>
@@ -40,10 +41,11 @@ gcloud config set project <YOUR-PROJECT-ID>
 export PROJECT_ID=$(gcloud config get-value project); echo $PROJECT_ID
 ```
 
+**[次へ]** ボタンをクリックして次のステップに進みます。
+
 ## ゾーンの設定
 
-今回はチュートリアルのためシングルゾーンクラスタを作成します。
-今回使用するゾーンを Cloud Shell のデフォルトゾーンに設定します。
+GKEクラスタを起動するゾーンを Cloud Shell のデフォルトゾーンに設定します。
 
 ```bash
 gcloud config set compute/zone asia-northeast1-b
@@ -55,6 +57,8 @@ gcloud config set compute/zone asia-northeast1-b
 export ZONE=$(gcloud config get-value compute/zone); echo $ZONE
 ```
 
+**[次へ]** ボタンをクリックして次のステップに進みます。
+
 ## APIの有効化
 
 GKE クラスタの作成に必要となる API を次のコマンドで有効化します。
@@ -64,6 +68,8 @@ GKE クラスタの作成に必要となる API を次のコマンドで有効�
 ```bash
 gcloud services enable cloudapis.googleapis.com container.googleapis.com
 ```
+
+**[次へ]** ボタンをクリックして次のステップに進みます。
 
 ## GKEクラスタの作成
 
@@ -83,7 +89,9 @@ gcloud container clusters list
   
 コンソールで確認する場合は以下をクリックします。
 
-[Display on the Console](https://console.cloud.google.com/kubernetes/list?cloudshell=true)
+[Display on the Console](https://console.cloud.google.com/kubernetes/list)
+
+**[次へ]** ボタンをクリックして次のステップに進みます。
 
 ## Credential の取得
 
@@ -95,11 +103,15 @@ gcloud container clusters get-credentials k8s-handson --zone $ZONE --project $PR
 ```
 
 kubectlがGKEクラスタ「k8s-handson」に接続できるかを確認するために、
-クラスタのノードを取得するための次のコマンドを実行します。
+クラスタのノード情報を取得するための次のコマンドを実行します。
 
 ```bash
 kubectl get nodes
 ```
+
+3台のワーカーノードの情報が表示されます。
+
+**[次へ]** ボタンをクリックして次のステップに進みます。
 
 ## これで終わりです。
 
