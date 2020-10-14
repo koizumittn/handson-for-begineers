@@ -87,7 +87,7 @@ GKEクラスタ「k8s-handson」のステータスが **RUNNING** になって�
 gcloud container clusters list
 ```
   
-コンソールで確認する場合は以下をクリックします。
+(任意)Cloud Consoleで確認する場合は以下のリンクをクリックします。
 
 [Display on the Console](https://console.cloud.google.com/kubernetes/list)
 
@@ -121,7 +121,7 @@ GKEクラスタの作成が完了しました。
 
 これで、コンテナ化されたアプリケーションをGKEクラスタ上にデプロイできます。
 
-次のハンズオン「コンテナ化されたウェブアプリケーションのデプロイ」に進む場合は次のコマンドを実行します。
+次のハンズオン「DockerコンテナのビルドとGKEクラスタへのPodのデプロイ」に進む場合は次のコマンドを実行します。
 
 ```bash
 cloudshell launch-tutorial -d k8s/hello-app.md
@@ -132,4 +132,4 @@ cloudshell launch-tutorial -d k8s/hello-app.md
 [はじめてのKubernetes 入門ハンズオン
 ](https://github.com/koizumittn/handson-for-begineers/tree/master/k8s)
 
-**作業後は忘れずにクリーンアップする**: ハンズオンを終了する場合は、不要な料金の発生を避けるためにプロジェクトを削除してください。「gcloud projects delete <PROJECT-ID>」を使用します。
+**作業後は忘れずにクリーンアップする**: ハンズオンを終了する場合は、不要な料金の発生を避けるためにプロジェクトを削除してください。「gcloud projects delete $PROJECT_ID」を使用します。
