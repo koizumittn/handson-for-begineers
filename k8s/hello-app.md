@@ -16,7 +16,8 @@
 **所要時間**: 約 10 分
 
 **前提条件**
-GKEクラスタ「k8s-handson」を作成済みであること
+GKEクラスタ「k8s-handson」を作成済みであること  
+※作成済みでない場合は[こちらのページ](https://github.com/koizumittn/handson-for-begineers/tree/master/k8s)のステップ1「GKEクラスタの作成」を実施してください。
 
 **本チュートリアルについて**
 GKEチュートリアル「[コンテナ化されたウェブ アプリケーションのデプロイ
@@ -145,13 +146,17 @@ kubectl describe pods hello-app
 
 **[次へ]** ボタンをクリックして次のステップに進みます。
 
-## サンプルアプリをインターネットに公開する
+## hello-appをインターネットに公開する
+
+### Serviceオブジェクトについて
 
 Pod には個別に割り当てられた IP アドレスがありますが、これらの IP にはクラスタ内からしかアクセスできません。
 クラスタ外からPodにアクセスするためにServiceオブジェクトを使用します。
 
-GKEではServiceタイプLoadBalancerに指定することで、[Cloud Load Balancing(負荷分散のマネージドサービス)](https://cloud.google.com/load-balancing?hl=ja) の機能を利用して、
+GKEではServiceタイプを**LoadBalancer**に指定することで、[Cloud Load Balancing(負荷分散のマネージドサービス)](https://cloud.google.com/load-balancing?hl=ja) の機能を利用して、
 インターネット経由で到達可能なIPアドレスを生成し、Podにトラフィックを転送できるようになります。
+
+### Serviceオブジェクトの作成
 
 次のコマンドを実行して、LoadBalancer タイプの Service を使用して hello-app Pod をインターネットに公開します。
 
@@ -159,7 +164,15 @@ GKEではServiceタイプLoadBalancerに指定することで、[Cloud Load Bala
 kubectl expose pod hello-app --name=hello-app-service --type=LoadBalancer --port 80 --target-port 8080
 ```
 
+kubectl exposeコマンドは指定したKubernetesオブジェクトに対応するServiceオブジェクトを作成します。
+
 ここで、--port フラグはロードバランサ上で構成されたポート番号を指定し、--target-port フラグは hello-app コンテナがリッスンするポート番号を指定します。
+
+つまりロードバランサの80番ポートにリクエストを送ると、hello-appコンテナの8080番ポートに転送され、hello-appからのレスポンスを得ることができます。
+
+**[次へ]** ボタンをクリックして次のステップに進みます。
+
+## 公開されたhello-appへのアクセス
 
 次のコマンドを実行して、Serviceオブジェクト「hello-app-service」の情報を表示します。
 
@@ -171,7 +184,17 @@ EXTERNAL_IP アドレスをクリップボードにコピーします（例: 203
 
 注：ロードバランサがプロビジョニングされるまでに1〜2分ほどかかることがあります。その間、pendingと表示されることがあります。少し待ってからから再度コマンドを実行します。
 
-hello-app Pod が Kubernetes Service を介してインターネットに公開されたので、新しいブラウザタブを開き、クリップボードにコピーした Service の IP アドレスに移動します。Hello, World! メッセージと Hostname フィールドが表示されます。
+hello-app Pod が Serviceオブジェクト を介してインターネットに公開されたので、新しいブラウザタブを開き、クリップボードにコピーした Service の IP アドレスに移動します。
+
+Hello, World! メッセージと Hostname フィールドが表示されます。  
+クラスタ外からhello-app Podにアクセスできることを確認できました。
+
+### ホスト名に関する補足
+Hostnameフィールドには「hello-app」と表示されます。  
+これはコンテナのホスト名が出力されており、Pod名がそのままコンテナのホスト名となっていることを表します。
+
+ローカル(Cloud Shell)でコンテナを起動した際はHostnameフィールドは「0776c4b14045」のようなIDが表示されていました。  
+これはDockerによってランダムに割り当てられたIDがコンテナのホスト名となっています。
 
 **[次へ]** ボタンをクリックして次のステップに進みます。
 
@@ -197,6 +220,8 @@ kubectl delete pod hello-app
 ```bash
 gcloud container clusters delete k8s-handson
 ```
+
+**[次へ]** ボタンをクリックして次のステップに進みます。
 
 ## これで終わりです。
 
