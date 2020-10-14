@@ -129,6 +129,8 @@ kubectl run hello-app --image=gcr.io/${PROJECT_ID}/hello-app:v1
 kubectl get pods
 ```
 
+「SATUS」列が**Running**となっていればPodが正常に起動しています。  
+
 **[次へ]** ボタンをクリックして次のステップに進みます。
 
 ## サンプルアプリをインターネットに公開する
