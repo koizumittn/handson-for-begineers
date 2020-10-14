@@ -15,8 +15,8 @@ GCP(Google Cloud Platform)を使用します。
 ## 目次
 |ステップ|タイトル|Cloud Shellで起動|手順|
 | --- | --- | --- | --- |
-| 1 | GKEクラスタの作成 | [![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/create-gke-cluster.md) | [こちら](https://github.com/koizumittn/handson-for-begineers/blob/master/k8s/create-gke-cluster.md) |
-| 2 | DockerコンテナのビルドとGKEクラスタへのPodのデプロイ | [![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/hello-app.md) | [こちら](https://github.com/koizumittn/handson-for-begineers/blob/master/k8s/hello-app.md) |
+| 1 | GKEクラスタの作成 | [![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/tutorial-create-gke-cluster.md) | [こちら](https://github.com/koizumittn/handson-for-begineers/blob/master/k8s/tutorial-create-gke-cluster.md) |
+| 2 | DockerコンテナのビルドとGKEクラスタへのPodのデプロイ | [![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/tutorial-create-pod.md) | [こちら](https://github.com/koizumittn/handson-for-begineers/blob/master/k8s/tutorial-create-pod.md) |
 
 ## FAQ
 Q. Cloud Shellとは何ですか？  
