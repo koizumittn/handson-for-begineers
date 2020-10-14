@@ -90,8 +90,10 @@ docker run --rm -p 8080:8080 gcr.io/${PROJECT_ID}/hello-app:v1
 
 これによりhello-appのDockerコンテナが起動し、ローカル(Cloud Shell)の8080番ポートへのリクエストをhello-appの8080番ポートへ転送されるようになります。
 
-[ウェブでプレビュー] ボタン <walkthrough-web-preview-icon></walkthrough-web-preview-icon> をクリックして、ポート番号 8080 を選択します。
-GKE でプロキシ サービスのプレビュー用 URL が新しいブラウザ ウィンドウで開きます。
+[ウェブでプレビュー] ボタン <walkthrough-web-preview-icon></walkthrough-web-preview-icon> をクリックして、ポート番号 8080 を選択します。  
+新しいブラウザウィンドウが開き、「Hello, world!」と表示されればOKです。
+
+正常なレスポンスを確認したら、docker run コマンドを実行中のタブで Ctrl+C キーを押してコンテナをシャットダウンします。
 
 **[次へ]** ボタンをクリックして次のステップに進みます。
 
