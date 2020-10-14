@@ -131,6 +131,18 @@ kubectl get pods
 
 「SATUS」列が**Running**となっていればPodが正常に起動しています。  
 
+「-o wide」オプションを付けるとPodに割り当てられたIPアドレスなど、より多くの情報を表示できます。
+
+```bash
+kubectl get pods -o wide
+```
+
+kubectl describeコマンドを使用すると、Podの詳細な仕様やステータスを表示できます。
+
+```bash
+kubectl describe pods hello-app
+```
+
 **[次へ]** ボタンをクリックして次のステップに進みます。
 
 ## サンプルアプリをインターネットに公開する
