@@ -124,7 +124,7 @@ GKEクラスタの作成が完了しました。
 次のハンズオン「DockerコンテナのビルドとGKEクラスタへのPodのデプロイ」に進む場合は次のコマンドを実行します。
 
 ```bash
-cloudshell launch-tutorial -d k8s/hello-app.md
+cloudshell launch-tutorial -d k8s/tutorial-create-pod.md
 ```
 
 ハンズオンの一覧は以下のサイトに記載されています。
