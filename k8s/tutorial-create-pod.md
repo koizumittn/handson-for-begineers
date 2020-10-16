@@ -13,17 +13,17 @@
 6. サンプルアプリをインターネットに公開する
 7. 作成したリソースの削除
 
-**所要時間**: 約 10 分
+**所要時間**: 約 15 分
 
-**前提条件**
+**前提条件**  
 GKEクラスタ「k8s-handson」を作成済みであること  
 ※作成済みでない場合は[こちらのページ](https://github.com/koizumittn/handson-for-begineers/tree/master/k8s)のステップ1「GKEクラスタの作成」を実施してください。
 
-**本チュートリアルについて**
+**本チュートリアルについて**  
 GKEチュートリアル「[コンテナ化されたウェブ アプリケーションのデプロイ
 ](https://cloud.google.com/kubernetes-engine/docs/tutorials/hello-app)」をベースとしています。
 
-**hello-appについて**
+**hello-appについて**  
 hello-appはGoで作成されたウェブサーバーで、ポート8080のすべてのリクエストに対して「Hello, World!」というメッセージを返します。
 
 hello-app を Kubernetesクラスタ にデプロイする前に、hello-app ソースコードを Docker イメージとしてパッケージ化する必要があります。
