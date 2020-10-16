@@ -12,7 +12,7 @@
 4. GKEクラスタの作成
 5. Credential の取得
 
-**所要時間**: 約 10 分
+**所要時間**: 約 15 分
 
 **[開始]** ボタンをクリックして次のステップに進みます。
 
@@ -29,7 +29,7 @@ gcloud projects list
 
 今回使用するGCPプロジェクトを Cloud Shell のデフォルトプロジェクトに設定するために、次のコマンドを実行します。
 
-「YOUR-PROJECT-ID」は前のステップで確認したプロジェクトIDに置き換えます。
+「YOUR-PROJECT-ID」は前のステップで確認したプロジェクトID(例：k8s-handson-123456)に置き換えます。
 
 ```bash
 gcloud config set project <YOUR-PROJECT-ID>
