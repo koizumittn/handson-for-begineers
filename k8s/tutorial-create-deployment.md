@@ -193,10 +193,12 @@ cd ~/kubernetes-engine-samples/hello-app/
 ```
 
 お好きなテキストエディタ(vimなど)を使うか「エディタを開く」をクリックしmain.goを開きます。  
-バージョン番号(48行目)を「2.0.0」に変更・保存します。
+バージョン番号(48行目)を「2.0.0」に変更し、保存します。
 
-<walkthrough-editor-open-file filePath="main.go">
-</walkthrough-editor-open-file>
+```
+(48行目) fmt.Fprintf(w, "Version: 1.0.0\n") 
+# 「1.0.0」を 「2.0.0」に変更します
+```
 
 ### Dockerイメージのビルド
 タグにv2を指定してDockerイメージをビルドします。  
