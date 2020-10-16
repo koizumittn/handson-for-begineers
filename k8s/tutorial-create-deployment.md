@@ -14,7 +14,9 @@
 6. 公開されたhello-appへのアクセス
 7. アプリケーションの更新
 8. Deploymentの更新
-9. 作成したリソースの削除
+9. Docker イメージを Container Registry に push する
+10. 
+11. 作成したリソースの削除
 
 **所要時間**: 約 15 分
 
@@ -141,9 +143,11 @@ kubectl expose deployment hello-app --name=hello-app-deployment-service --type=L
 
 このServiceはDeploymentによって作成されたPodをエンドポイントとしてインターネットに公開します。  
 
+
 **補足**
 ServiceはKubernetesクラスタ上で起動しているPodの中から、自身のエンドポイントとすべきPodを知る必要があります。  
 これはDeploymentが付与する[ラベル](https://kubernetes.io/ja/docs/concepts/overview/working-with-objects/labels/)を用いて判断しています。  
+
 
 (任意)シークレットウィンドウを開いて同じIPアドレスにアクセスします。  
 レスポンスのホスト名が異なっていることが確認できます。  
@@ -168,6 +172,8 @@ hello-app Pod が Serviceオブジェクト を介してインターネットに
 Hello, World! メッセージと Hostname フィールドが表示されます。  
 クラスタ外からhello-app Podにアクセスできることを確認できました。
 
+後のステップでもう一度アクセスするため、IPアドレスを控えておきます。  
+
 ### ホスト名に関する補足
 Hostnameフィールドには「hello-app-xxxxxxxx」のように表示されます。  
 これはPod名がそのままコンテナのホスト名となっていることを表します。  
@@ -186,10 +192,11 @@ hello-appのディレクトリに移動します。
 cd ~/kubernetes-engine-samples/hello-app/
 ```
 
-main.goを開きます。  
-<walkthrough-editor-select-line filePath="main.go"></walkthrough-editor-select-line>
+お好きなテキストエディタ(vimなど)を使うか「エディタを開く」をクリックしmain.goを開きます。  
+バージョン番号(48行目)を「2.0.0」に変更・保存します。
 
-バージョン番号(48行目)を「2.0.0」に変更します。
+<walkthrough-editor-open-file filePath="main.go">
+</walkthrough-editor-open-file>
 
 ### Dockerイメージのビルド
 タグにv2を指定してDockerイメージをビルドします。  
@@ -205,10 +212,50 @@ docker images コマンドを実行して、ビルドが成功したことを確
 docker images
 ```
 
+## Docker イメージを Container Registry に push する
+
+次のコマンドを実行して、Docker コマンドライン ツールから [Container Registry](https://cloud.google.com/container-registry?hl=ja) への認証を構成します。
+
+```bash
+gcloud auth configure-docker
+```
+
+次のコマンドを実行して、ビルドした Docker イメージを Container Registry に push します。
+
+```bash
+docker push gcr.io/${PROJECT_ID}/hello-app:v2
+```
+
+これにより、Container RegistyにpushされたDockerイメージを使用して、KubernetesクラスタにDockerコンテナをデプロイできるようになります。
+
+
 **[次へ]** ボタンをクリックして次のステップに進みます。
 
 ## Deploymentの更新
 
+イメージを更新して既存のデプロイにローリング アップデートを適用します。
+
+```bash
+kubectl set image deployment/hello-app hello-app=gcr.io/${PROJECT_ID}/hello-app:v2
+```
+
+次のコマンドを実行して、v1 イメージを実行している実行中の Pod が停止し、v2 イメージを実行している新しい Pod が起動するのを確認します。  
+※10秒前後で完了するため、前のコマンド完了から時間が立つと既にすべてのPodがRunningと表示されます。これらはv2イメージによる新しいPodです。
+
+```bash
+watch kubectl get pods
+```
+
+Ctrl + Cを入力してコマンドを終了します。
+
+新しいブラウザタブを開き、Service の IP アドレスにアクセスします。  
+Versionが「2.0.0」になっていることを確認します。
+
+※IPアドレスを忘れてしまった場合は、以下のコマンドを実行してEXTERNAL-IPを確認します。  
+
+```bash
+kubectl get services hello-app-deployment-service
+```
 
 **[次へ]** ボタンをクリックして次のステップに進みます。
 
