@@ -19,8 +19,9 @@
 
 **前提条件**  
 GKEクラスタ「k8s-handson」を作成済みであること  
-hello-appのDockerイメージをビルド済みであること
-※作成済みでない場合は[こちらのページ](https://github.com/koizumittn/handson-for-begineers/tree/master/k8s)の「GKEクラスタの作成」「DockerコンテナのビルドとGKEクラスタへのPodのデプロイ」を実施してください。
+hello-appのDockerイメージをビルド済みであること  
+
+※作成済みでない場合は[こちらのページ](https://github.com/koizumittn/handson-for-begineers/tree/master/k8s)のステップ1〜2を実施してください。
 
 **本チュートリアルについて**  
 GKEチュートリアル「[コンテナ化されたウェブ アプリケーションのデプロイ
@@ -28,7 +29,7 @@ GKEチュートリアル「[コンテナ化されたウェブ アプリケーシ
 
 **Deploymentについて**  
 Deploymentは複数の同じPodの集合です。  
-ReplicaSetオブジェクトを管理することで複数のPodを実行し、エラーとなったPodは自動的に置き換えます。
+ReplicaSetオブジェクトを管理することで複数のPodを実行し、エラーが発生したPodは自動的に置き換えます。
 
 内部にPodの仕様を含むPodテンプレートを使用します。  
 Podテンプレートが更新されると、自動的に新しいPodで置き換えます。
