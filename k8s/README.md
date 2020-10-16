@@ -16,7 +16,8 @@ GCP(Google Cloud Platform)を使用します。
 |ステップ|タイトル|Cloud Shellで起動|手順|
 | --- | --- | --- | --- |
 | 1 | GKEクラスタの作成 | [![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/tutorial-create-gke-cluster.md) | [こちら](https://github.com/koizumittn/handson-for-begineers/blob/master/k8s/tutorial-create-gke-cluster.md) |
-| 2 | DockerコンテナのビルドとGKEクラスタへのPodのデプロイ | [![GKEクラスタの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/tutorial-create-pod.md) | [こちら](https://github.com/koizumittn/handson-for-begineers/blob/master/k8s/tutorial-create-pod.md) |
+| 2 | DockerコンテナのビルドとGKEクラスタへのPodのデプロイ | [![Podのデプロイ](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/tutorial-create-pod.md) | [こちら](https://github.com/koizumittn/handson-for-begineers/blob/master/k8s/tutorial-create-pod.md) |
+| 3 | Deploymentの作成とアプリケーションの更新 | [![Deploymentの作成](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/home/dashboard?cloudshell=true&cloudshell_git_repo=https://github.com/koizumittn/handson-for-begineers&cloudshell_tutorial=k8s/tutorial-create-deployment.md) | [こちら](https://github.com/koizumittn/handson-for-begineers/blob/master/k8s/tutorial-create-deployment.md) |
 
 ## FAQ
 Q. Cloud Shellとは何ですか？  
@@ -35,5 +36,6 @@ A. 「承認」ボタンをクリックし、後続の手順に進んでくだ�
 Q. このページの「OPEN IN GOOGLE CLOUD SHELL」をクリックすると「You have already cloned this repo into directory〜」と表示されます。どうすれば良いですか？
 
 A. 初回起動時にこのGitリポジトリがCloud Shellにクローンされるため、2回目以降は既に存在している状態になります。デフォルトの「1」を入力し、新たにGitリポジトリをクローンせずディレクトリの移動のみ行います。
+※このチュートリアルの更新を反映するためには「2」を入力し、Gitリポジトリを再度pullします。
 
 ![You have already cloned this repo into directory](https://user-images.githubusercontent.com/22129880/96035891-a0c7c380-0e9e-11eb-96ab-84f8f3023f7e.png)
