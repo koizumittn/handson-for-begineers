@@ -9,11 +9,12 @@
 1. 環境変数の設定
 2. Deploymentを作成する
 3. Deploymentによって作成されたオブジェクトを確認する
-4. Deploymentをインターネットに公開する
-5. 公開されたhello-appへのアクセス
-6. アプリケーションの更新
-7. Deploymentの更新
-8. 作成したリソースの削除
+4. Podのスケール
+5. Deploymentをインターネットに公開する
+6. 公開されたhello-appへのアクセス
+7. アプリケーションの更新
+8. Deploymentの更新
+9. 作成したリソースの削除
 
 **所要時間**: 約 15 分
 
@@ -95,7 +96,7 @@ kubectl get pods
 
 ### すべてのオブジェクトを表示
 
-次のコマンドを実行して、すべてのオブジェクトを表示します。
+次のコマンドを実行すると、すべてのオブジェクトを表示できます。
 
 ```bash
 kubectl get all
@@ -106,6 +107,24 @@ Deployment、ReplicaSet、Podオブジェクトがそれぞれ作成されてい
 **補足**  
 service/kubernetesはデフォルトで作成されているServiceオブジェクトです。  
 ここでは気にせず進めて構いません。  
+
+**[次へ]** ボタンをクリックして次のステップに進みます。
+
+## Podのスケール
+Deployment(Replicaset)によって起動されるPodの数はレプリカによって決まります。  
+次のコマンドを実行して、Deploymentのレプリカを3に設定します。  
+
+```bash
+kubectl scale deployment hello-app --replicas=3
+```
+
+次のコマンドを実行して、Podの数が3つになっていることを確認します。
+
+```bash
+kubectl get all
+```
+
+このようにDeploymentを使用することで、同じ種類のPodを複数起動することができます。  
 
 **[次へ]** ボタンをクリックして次のステップに進みます。
 
@@ -125,6 +144,10 @@ kubectl expose deployment hello-app --name=hello-app-deployment-service --type=L
 **補足**
 ServiceはKubernetesクラスタ上で起動しているPodの中から、自身のエンドポイントとすべきPodを知る必要があります。  
 これはDeploymentが付与する[ラベル](https://kubernetes.io/ja/docs/concepts/overview/working-with-objects/labels/)を用いて判断しています。  
+
+(任意)シークレットウィンドウを開いて同じIPアドレスにアクセスします。  
+レスポンスのホスト名が異なっていることが確認できます。  
+これはServiceがバックエンドの3つのPodにリクエストを振り分けているためです。  
 
 **[次へ]** ボタンをクリックして次のステップに進みます。
 
