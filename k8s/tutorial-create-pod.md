@@ -229,10 +229,16 @@ gcloud container clusters delete k8s-handson
 
 ローカルでビルドしたhello-appのDockerイメージをContainer Registryにpushし、GKEクラスタへのデプロイ・インターネット公開が完了しました。
 
-ハンズオンの一覧は以下のサイトに記載されています。  
-ハンズオンを続ける場合は「GDeploymentの作成とアプリケーションの更新」に進みます。
+次のハンズオン「Deploymentの作成とアプリケーションの更新」に進む場合は次のコマンドを実行します。
 
-[はじめてのKubernetes 入門ハンズオン
-](https://github.com/koizumittn/handson-for-begineers/tree/master/k8s)
+```bash
+cloudshell launch-tutorial -d ~/cloudshell_open/handson-for-begineers/k8s/tutorial-create-deployment.md
+```
+
+
+ハンズオンの一覧は以下のサイトに記載されています。  
+ハンズオンを続ける場合は「Deploymentの作成とアプリケーションの更新」に進みます。
+
+[はじめてのKubernetes 入門ハンズオン](https://github.com/koizumittn/handson-for-begineers/tree/master/k8s)
 
 **作業後は忘れずにクリーンアップする**: ハンズオンを終了する場合は、不要な料金の発生を避けるためにプロジェクトを削除してください。「gcloud projects delete $PROJECT_ID」を使用します。

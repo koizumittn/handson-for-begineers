@@ -41,9 +41,13 @@ Podテンプレートが更新されると、自動的に新しいPodで置き�
 
 ## 環境変数の設定
 
-※前のチュートリアルで設定済みの場合はスキップいただいて構いません。
+プロジェクトIDが環境変数に設定されていることを次のコマンドを実行して確認します。
 
-PROJECT_ID 環境変数に Google Cloud プロジェクト IDを設定します。PROJECT_ID 変数は、コンテナ イメージをプロジェクトの Container Registry に関連付けるために使用されます。
+```bash
+echo $PROJECT_ID
+```
+
+環境変数が正しく設定されていない場合は以下のコマンドを実行します。
 
 ```bash
 export PROJECT_ID=$(gcloud config get-value project); echo $PROJECT_ID
@@ -295,7 +299,6 @@ hello-appイメージを用いてGKEクラスタにDeploymentをデプロイし�
 
 ハンズオンの一覧は以下のサイトに記載されています。  
 
-[はじめてのKubernetes 入門ハンズオン
-](https://github.com/koizumittn/handson-for-begineers/tree/master/k8s)
+[はじめてのKubernetes 入門ハンズオン](https://github.com/koizumittn/handson-for-begineers/tree/master/k8s)
 
 **作業後は忘れずにクリーンアップする**: ハンズオンを終了する場合は、不要な料金の発生を避けるためにプロジェクトを削除してください。「gcloud projects delete $PROJECT_ID」を使用します。
