@@ -112,13 +112,13 @@ gcloud auth configure-docker
 docker push gcr.io/${PROJECT_ID}/hello-app:v1
 ```
 
-これにより、Container RegistyにpushされたDockerイメージを使用して、KubernetesクラスタにDockerコンテナをデプロイできるようになります。
+これにより、Container RegistryにpushされたDockerイメージを使用して、KubernetesクラスタにDockerコンテナをデプロイできるようになります。
 
 **[次へ]** ボタンをクリックして次のステップに進みます。
 
 ## サンプルアプリを GKE にデプロイする
 
-次のコマンドを実行して、Container RegistyにpushされたDockerイメージを使用して、GKEクラスタにPodをデプロイします。
+次のコマンドを実行して、Container RegistryにpushされたDockerイメージを使用して、GKEクラスタにPodをデプロイします。
 
 ```bash
 kubectl run hello-app --image=gcr.io/${PROJECT_ID}/hello-app:v1

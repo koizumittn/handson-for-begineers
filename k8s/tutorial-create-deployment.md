@@ -232,7 +232,7 @@ gcloud auth configure-docker
 docker push gcr.io/${PROJECT_ID}/hello-app:v2
 ```
 
-これにより、Container RegistyにpushされたDockerイメージを使用して、KubernetesクラスタにDockerコンテナをデプロイできるようになります。
+これにより、Container RegistryにpushされたDockerイメージを使用して、KubernetesクラスタにDockerコンテナをデプロイできるようになります。
 
 
 **[次へ]** ボタンをクリックして次のステップに進みます。
