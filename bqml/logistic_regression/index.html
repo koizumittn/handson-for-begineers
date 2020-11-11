@@ -1,0 +1,283 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>国勢調査データに基づいた分類モデルの構築と使用</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="logistic_regression"
+                  title="国勢調査データに基づいた分類モデルの構築と使用"
+                  environment="web"
+                  feedback-link="https://github.com/googlecodelabs/your-first-pwapp/issues">
+    
+      <google-codelab-step label="イントロダクション" duration="0">
+        <p>このハンズオンではBigQuery ML を使用して、米国国勢調査の回答者のユーザー属性に基づいて、その回答者の所得が 2 つの範囲のどちらに分類されるかを予測する <a href="https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create?hl=ja#model_type" target="_blank">2 項ロジスティック回帰</a>モデルを作成します。</p>
+<h2 is-upgraded><strong>目標</strong></h2>
+<ul>
+<li>ロジスティック回帰モデルを作成する。</li>
+<li>ロジスティック回帰モデルを評価する。</li>
+<li>ロジスティック回帰モデルを使用して予測を行う。</li>
+</ul>
+<h2 is-upgraded><strong>料金</strong></h2>
+<h2 is-upgraded><strong>事前準備</strong></h2>
+<p>GCP(Google Cloud Platform)を使用します。 <a href="https://www.apps-gcp.com/gcp-startup/" target="_blank">こちら</a>の手順を参考にGCPプロジェクトを作成してください。</p>
+<p>※GCPの無料トライアルをご利用いただかない場合、BigQueryMLの使用料金が発生します。予めご了承いただいた上でハンズオンを進めてください。</p>
+<h2 is-upgraded><strong>INDEX</strong></h2>
+<ol type="1" start="1">
+<li>データセットを作成する</li>
+<li>データを確認する</li>
+<li>トレーニングデータを選択する</li>
+<li>ロジスティック回帰モデルを作成する</li>
+<li>ML EVALUATEクエリを実行する</li>
+<li>ML.PREDICT関数を使用して所得階層を予測する</li>
+<li>クリーンアップ</li>
+</ol>
+<h2 is-upgraded><strong>参考</strong></h2>
+<p>当ハンズオンはGCPの<a href="https://cloud.google.com/bigquery-ml/docs/logistic-regression-prediction?hl=ja" target="_blank">公式チュートリアル</a>をベースにしています。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="データセットを作成する" duration="0">
+        <p>最初のステップとして、モデルを格納する BigQuery データセットを作成します。データセットを作成する手順は次のとおりです。</p>
+<ol type="1" start="1">
+<li>Cloud Console の <a href="https://console.cloud.google.com/bigquery?hl=ja" target="_blank">BigQuery ページ</a>に移動します。以下のような画面に遷移します。</li>
+</ol>
+<p class="image-container"><img style="width: 624.00px" src="img/19aacca6d7693e56.png"></p>
+<ol type="1" start="2">
+<li>ナビゲーション パネルの [リソース] セクションで、プロジェクト名をクリックします。</li>
+<li>右側の詳細パネルで、[データセットを作成] をクリックします。</li>
+</ol>
+<p class="image-container"><img style="width: 624.00px" src="img/28d5410fd779cf66.png"></p>
+<ol type="1" start="4">
+<li>[データセットを作成] ページで、[データセット ID] に「census」と入力します。</li>
+<li>その他のデフォルト設定はすべてそのままにし、[データセットを作成] をクリックします。</li>
+</ol>
+<p class="image-container"><img style="width: 502.00px" src="img/fe32b4097f796d0e.png"></p>
+<p>以上でデータセットの作成は完了です。以下のようにプロジェクト名の下に作成したデータセットが表示されていればOKです。</p>
+<p class="image-container"><img style="width: 308.00px" src="img/50916cb9fbdf0ba0.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="データを確認する" duration="0">
+        <p>今回のトレーニングで使用するデータをSQLを用いて確認します。Google Cloudが公開する一般データセットを使用します。</p>
+<ol type="1" start="1">
+<li>Cloud Console で、[クエリを新規作成] ボタンをクリックします。</li>
+<li>[クエリエディタ] テキスト領域に、次の標準 SQL クエリを入力します。</li>
+</ol>
+<h3 is-upgraded><strong>米国国勢調査データセットから 100 行のデータを取得するクエリ</strong></h3>
+<pre><code>SELECT
+  *
+FROM
+  `bigquery-public-data.ml_datasets.census_adult_income`
+LIMIT
+  100;</code></pre>
+<ol type="1" start="3">
+<li>[実行] をクリックします。</li>
+</ol>
+<p class="image-container"><img style="width: 567.50px" src="img/dae25598fa12b386.png"></p>
+<ol type="1" start="4">
+<li>クエリが完了したら、クエリテキスト領域の下にある [結果] タブをクリックします。結果は次のようになります。</li>
+</ol>
+<p class="image-container"><img style="width: 624.00px" src="img/755de631feb506c6.png"></p>
+<p>クエリ結果から、census_adult_income テーブルの income_bracket 列には &lt;=50K または &gt;50K の 2 つの値のどちらかしかないことがわかります。また、census_adult_income テーブルの列 education と education_num は同じデータを異なる形式で表したものであることがわかります。functional_weight 列は、国勢調査機関が特定の行に対応すると考えている人数で、この列の値は、特定の行の income_bracket の値とは関連性がないと思われます。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="トレーニング データを選択する" duration="0">
+        <p>次に、ロジスティック回帰モデルのトレーニングに使用するデータを選択します。このチュートリアルでは、次の属性に基づいて国勢調査回答者の所得を予測します。</p>
+<ul>
+<li>年齢(age)</li>
+<li>業務のタイプ(workclass)</li>
+<li>居住国(native_country)</li>
+<li>婚姻状況(marital_status)</li>
+<li>教育水準(education_num)</li>
+<li>職業(occupation)</li>
+<li>人種(race)</li>
+<li>週あたりの労働時間(hours_per_week)</li>
+</ul>
+<p>次のクエリでは、トレーニング データをまとめるビューを作成します。このビューは、チュートリアルの後半で CREATE MODEL ステートメントで使われます。</p>
+<h3 is-upgraded><strong>トレーニング用のデータをまとめるビュー(input_view)を作成するクエリ</strong></h3>
+<pre><code>CREATE OR REPLACE VIEW
+  `census.input_view` AS
+SELECT
+  age,
+  workclass,
+  native_country,
+  marital_status,
+  education_num,
+  occupation,
+  race,
+  hours_per_week,
+  income_bracket,
+  CASE
+    WHEN MOD(functional_weight, 10) &lt; 8 THEN &#39;training&#39;
+    WHEN MOD(functional_weight, 10) = 8 THEN &#39;evaluation&#39;
+    WHEN MOD(functional_weight, 10) = 9 THEN &#39;prediction&#39;
+  END AS dataframe
+FROM
+  `bigquery-public-data.ml_datasets.census_adult_income`</code></pre>
+<h2 is-upgraded>クエリの詳細</h2>
+<p>このクエリは、回答者の教育水準を表す education_num や、回答者が行う業務のタイプを表す workclass など、国勢調査回答者に関するデータを抽出します。このクエリでは、データが重複するカテゴリは除外しています。たとえば、census_adult_income テーブルの列 education と education_num は同じデータを異なる形式で表しているため、このクエリでは education 列を除外しています。dataframe 列では、除外された functional_weight 列を使用して、データソースの 80% にトレーニング用としてラベルを付け、残りのデータを評価用と予測用として予約しています。クエリでこれらの列を含むビューを作成し、後でそれを使用してトレーニングと予測を行えるようにします。</p>
+<h2 is-upgraded><strong>クエリの実行</strong></h2>
+<ol type="1" start="1">
+<li>Cloud Console で、[クエリを新規作成] ボタンをクリックします。</li>
+<li>[クエリエディタ] テキスト領域に、上記の クエリをコピーして貼り付けます。</li>
+<li>[実行] をクリックします。</li>
+</ol>
+<p>成功すると「このステートメントで新しいビュー &lt;プロジェクトID&gt;:census.input_view が作成されました。」とメッセージが表示されます。</p>
+<ol type="1" start="4">
+<li>ナビゲーション パネルの [リソース] セクションで、プロジェクト名＞censusをクリックします。ビュー(input_view)がその下に表示されます。</li>
+<li>ビューをクリックします。ビューのスキーマが、クエリエディタの下の [スキーマ] タブに表示されます。</li>
+</ol>
+<p class="image-container"><img style="width: 519.50px" src="img/34b22cb913ceb5a6.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ロジスティック回帰モデルを作成する" duration="0">
+        <p>トレーニング データを確認したら、次のステップでは、そのデータを使用してロジスティック回帰モデルを作成します。</p>
+<p>CREATE MODEL ステートメントを &#39;LOGISTIC_REG&#39; オプション付きで使用することで、ロジスティック回帰モデルの作成とトレーニングが行えます。次のクエリでは、CREATE MODEL ステートメントを使用して、前のクエリで作成したビューで新しい 2 項ロジスティック回帰モデルをトレーニングしています。</p>
+<h3 is-upgraded><strong>ロジスティック回帰モデルを作成するクエリ</strong></h3>
+<pre><code>CREATE OR REPLACE MODEL
+  `census.census_model`
+OPTIONS
+  ( model_type=&#39;LOGISTIC_REG&#39;,
+    auto_class_weights=TRUE,
+    input_label_cols=[&#39;income_bracket&#39;]
+  ) AS
+SELECT
+  *
+FROM
+  `census.input_view`
+WHERE
+  dataframe = &#39;training&#39;</code></pre>
+<h2 is-upgraded><strong>クエリの詳細</strong></h2>
+<p>CREATE MODELステートメントは、SELECT ステートメントのトレーニング データを使用してモデルをトレーニングしています。</p>
+<p>OPTIONS 句は、モデルタイプとトレーニング オプションを指定します。ここでは、LOGISTIC_REG オプションでロジスティック回帰モデルタイプを指定しています。2 項ロジスティック回帰モデルか多項ロジスティック回帰モデルかを指定する必要はありません。BigQuery ML はラベル列の一意の値の数に基づいてどちらをトレーニングするかを判断できます。</p>
+<p>input_label_cols オプションは、SELECT ステートメントでラベル列として使用する列を指定します。ここでは、ラベル列は income_bracket であるため、モデルは他の行の値に基づいて、income_bracket の 2 つの値のどちらに分類される可能性が高いかを学習します。</p>
+<p>&#39;auto_class_weights=TRUE&#39; オプションは、トレーニング データ内のクラスラベルのバランスをとります。デフォルトでは、トレーニング データは重み付けされません。トレーニング データ内のラベルが不均衡である場合、モデルは最も出現回数の多いラベルクラスをより重視して予測するように学習することがあります。この場合、データセット内の回答者の大多数は低い方の所得階層に属します。このため、低い方の所得階層を過度に重視して予測するモデルになる可能性があります。クラスの重みは、各クラスの頻度に反比例した重みを計算して、クラスラベルのバランスをとります。</p>
+<p>SELECT ステートメントは、ステップ 2 で作成したビュー(input_view)に対してクエリを実行します。このビューには、モデルをトレーニングするための特徴データの列のみが含まれます。WHERE 句は input_view の行をフィルタして、トレーニング データフレームに属する行のみがトレーニング データに含まれるようにします。</p>
+<h2 is-upgraded><strong>CREATE MODEL クエリを実行する</strong></h2>
+<ol type="1" start="1">
+<li>Cloud Console で、[クエリを新規作成] ボタンをクリックします。</li>
+<li>[クエリエディタ] テキスト領域に、上記の クエリをコピーして貼り付けます。</li>
+<li>[実行] をクリックします。モデルの作成には1〜2分程度かかることがあります。成功すると「このステートメントで新しいモデル &lt;プロジェクト名&gt;:census.census_model が作成されました。」とメッセージが表示されます。</li>
+<li>ナビゲーション パネルの [リソース] セクションで、[PROJECT_ID] &gt; [census] を展開し、[census_model] をクリックします。</li>
+<li>[スキーマ] タブをクリックします。モデルスキーマには、BigQuery ML がロジスティック回帰の実行に使用した属性がリストされます。スキーマは次のように表示されます。</li>
+</ol>
+<p class="image-container"><img style="width: 624.00px" src="img/50cbcac3c91b9d2c.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ML.EVALUATE 関数を使用してモデルを評価する。" duration="0">
+        <p>モデルを作成したら、ML.EVALUATE 関数を使用してモデルの性能を評価します。ML.EVALUATE 関数は、実際のデータに対する予測値を評価します。</p>
+<p>モデルの評価に使用するクエリは次のとおりです。</p>
+<h3 is-upgraded><strong>モデルの性能を評価するクエリ</strong></h3>
+<pre><code>SELECT
+  *
+FROM
+  ML.EVALUATE (MODEL `census.census_model`,
+    (
+    SELECT
+      *
+    FROM
+      `census.input_view`
+    WHERE
+      dataframe = &#39;evaluation&#39;
+    )
+  )</code></pre>
+<h2 is-upgraded><strong>クエリの詳細</strong></h2>
+<p>ML.EVALUATE 関数は、ステップ 1 でトレーニングされたモデルと、SELECT サブクエリによって返された評価データを取得します。この関数は、モデルに関する統計を単一行で返します。このクエリは、input_view のデータを評価データとして使用します。WHERE 句で、サブクエリに evaluation データフレームの行のみが含まれるように入力データをフィルタします。</p>
+<h2 is-upgraded><strong>ML.EVALUATE クエリを実行する</strong></h2>
+<ol type="1" start="6">
+<li>Cloud Console で、[クエリを新規作成] ボタンをクリックします。</li>
+<li>[クエリエディタ] テキスト領域に、上記の クエリをコピーして貼り付けます。</li>
+<li>[実行] をクリックします。</li>
+<li>クエリが完了したら、クエリテキスト領域の下にある [結果] タブをクリックします。結果は次のようになります。</li>
+</ol>
+<p class="image-container"><img style="width: 624.00px" src="img/76d8bc0fa33c7fa6.png"></p>
+<p>ロジスティック回帰を使用しているため、結果には次の列が含まれます。</p>
+<ul>
+<li>precision</li>
+<li>recall</li>
+<li>accuracy(正確性)</li>
+<li>f1_score</li>
+<li>log_loss</li>
+<li>roc_auc</li>
+</ul>
+<p>モデルの精度は、正確に予測された値と予測全体の比率を表します。精度が .80 の場合、予測の 80% が正しいことを意味します。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ML.PREDICT 関数を使用して所得階層を予測する" duration="0">
+        <p>特定の回答者が属する所得階層を特定するには、ML.PREDICT 関数を使用します。次のクエリは、prediction データフレーム内のすべての回答者の所得階層を予測します。</p>
+<h3 is-upgraded><strong>prediction データフレーム内のすべての回答者の所得階層を予測するクエリ</strong></h3>
+<pre><code>SELECT
+  *
+FROM
+  ML.PREDICT (MODEL `census.census_model`,
+    (
+    SELECT
+      *
+    FROM
+      `census.input_view`
+    WHERE
+      dataframe = &#39;prediction&#39;
+     )
+  )</code></pre>
+<h2 is-upgraded><strong>クエリの詳細</strong></h2>
+<p>ML.PREDICT 関数は、モデルと、「prediction」データフレームの行のみを含めるようにフィルタされた input_view のデータを使用して、結果を予測します。先頭の SELECT ステートメントで、ML.PREDICT 関数の出力を取得します。</p>
+<h2 is-upgraded><strong>ML.PREDICT クエリを実行する</strong></h2>
+<ol type="1" start="1">
+<li>Cloud Console で、[クエリを新規作成] ボタンをクリックします。</li>
+<li>[クエリエディタ] テキスト領域に、上記の クエリをコピーして貼り付けます。</li>
+<li>[実行] をクリックします。</li>
+<li>クエリが完了したら、クエリテキスト領域の下にある [結果] タブをクリックします。結果は次のようになります。</li>
+</ol>
+<p class="image-container"><img style="width: 624.00px" src="img/a4fd31b1572ad5eb.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="クリーンアップ" duration="0">
+        <p>このチュートリアルで使用したリソースについて、Google Cloud Platform アカウントに課金されないようにする手順は次のとおりです。</p>
+<ul>
+<li>作成したプロジェクトを削除する。</li>
+<li>または、プロジェクトを保存して、データセットを削除する。</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
