@@ -125,6 +125,8 @@ LIMIT
 <li>週あたりの労働時間(hours_per_week)</li>
 </ul>
 <p>次のクエリでは、トレーニング データをまとめるビューを作成します。このビューは、チュートリアルの後半で CREATE MODEL ステートメントで使われます。</p>
+<aside class="special"><p>ビューとは既存テーブルからの抽出や複数テーブルの結合を行い、ユーザに必要な部分だけをあたかも一つのテーブルであるかのように見せるための、仮想的なテーブルの概念です。 ビューの実体はデータを持たないSQL文であり、物理的なテーブルとは異なります。</p>
+</aside>
 <h3 is-upgraded><strong>トレーニング用のデータをまとめるビュー(input_view)を作成するクエリ</strong></h3>
 <pre><code>CREATE OR REPLACE VIEW
   `census.input_view` AS
@@ -276,6 +278,7 @@ FROM
 <li>作成したプロジェクトを削除する。</li>
 <li>または、プロジェクトを保存して、データセットを削除する。</li>
 </ul>
+<p><a href="https://qiita.com/sekitaka_1214/items/e11287b78adf3f468d7f" target="_blank">こちら</a>の記事もご参照ください。</p>
 
 
       </google-codelab-step>
