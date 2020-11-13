@@ -17,10 +17,6 @@
     .error {
       color: red;
     }
-    #codelab-title {
-        background-color: #02a8f3;
-        color: #fff
-    }
   </style>
 </head>
 <body>
@@ -35,7 +31,7 @@
         <p>このハンズオンではBigQuery ML を使用して、 <a href="https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create?hl=ja#model_type" target="_blank">2 項ロジスティック回帰</a>モデルによるデータ分類の予測を体験いただきます。</p>
 <aside class="special"><p>ロジスティック回帰は教師あり学習における分類手法の1種です。2項ロジスティック回帰はデータが2種類のラベルのどちらに分類されるかを予測する機械学習モデルです。</p>
 </aside>
-<p>分析対象として、米国国勢調査のデータを使用します。年齢や職業、教育水準といった特徴から、その回答者の年収が「5万ドル超」「5万ドル以下」どちらであるかを予測します。</p>
+<p>分析対象として、米国国勢調査のデータを使用します。年齢や職業、教育水準といった特徴から、その回答者の年収が「5万ドル超」「5万ドル以下」のどちらであるかを予測します。</p>
 <h2 is-upgraded><strong>目標</strong></h2>
 <ul>
 <li>ロジスティック回帰モデルの作成・評価・予測の一連の流れを体感する</li>
@@ -85,6 +81,10 @@
 <p class="image-container"><img style="width: 624.00px" src="img/28d5410fd779cf66.png"></p>
 <ol type="1" start="4">
 <li>[データセットを作成] ページで、[データセット ID] に「census」と入力します。</li>
+</ol>
+<aside class="special"><p>「census」は国勢調査のことです</p>
+</aside>
+<ol type="1" start="5">
 <li>その他のデフォルト設定はすべてそのままにし、[データセットを作成] をクリックします。</li>
 </ol>
 <p class="image-container"><img style="width: 502.00px" src="img/fe32b4097f796d0e.png"></p>
@@ -96,8 +96,6 @@
     
       <google-codelab-step label="データを確認する" duration="4">
         <p>今回のトレーニングで使用するデータをSQLを用いて確認します。Google Cloudが公開する一般データセットより、米国国勢調査による成人の収入データが記録されている「census_adult_imcome」を使用します。</p>
-<aside class="special"><p>「census」は国勢調査のことです</p>
-</aside>
 <ol type="1" start="1">
 <li>Cloud Console で、[クエリを新規作成] ボタンをクリックします。</li>
 <li>[クエリエディタ] テキスト領域に、次の標準 SQL クエリを入力します。</li>
