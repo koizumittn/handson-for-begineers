@@ -39,7 +39,7 @@
 <li>モデルの精度の確認方法を理解する</li>
 </ul>
 <h2 is-upgraded><strong>料金</strong></h2>
-<p>このハンズオンではBigQueryの料金が発生します。igQueryでは毎月1TBまでのクエリは無料枠であるため、当ハンズオンの手順のみを実施する場合は無料で実施いただけます。</p>
+<p>このハンズオンではBigQueryの料金が発生します。BigQueryでは毎月1TBまでのクエリは無料枠であるため、当ハンズオンの手順のみを実施する場合は無料で実施いただけます。</p>
 <p>ただしご自身のGCPプロジェクトで他の用途でもBigQueryを使われている場合は費用が発生する可能性があることあらかじめご了承ください。</p>
 <h2 is-upgraded><strong>事前準備</strong></h2>
 <p>GCP(Google Cloud Platform)を使用します。 <a href="https://www.apps-gcp.com/gcp-startup/" target="_blank">こちら</a>の手順を参考にGCPプロジェクトを作成してください。</p>
@@ -90,6 +90,8 @@
     
       <google-codelab-step label="データを確認する" duration="2">
         <p>今回のトレーニングで使用するデータをSQLを用いて確認します。Google Cloudが公開する一般データセットより、米国国勢調査による成人の収入データが記録されている「census_adult_imcome」を使用します。</p>
+<aside class="special"><p>「census」は国勢調査のことです</p>
+</aside>
 <ol type="1" start="1">
 <li>Cloud Console で、[クエリを新規作成] ボタンをクリックします。</li>
 <li>[クエリエディタ] テキスト領域に、次の標準 SQL クエリを入力します。</li>
@@ -228,8 +230,12 @@ WHERE
       </google-codelab-step>
     
       <google-codelab-step label="評価用のデータを使用して作成したモデルの性能を評価する" duration="4">
-        <p>モデルを作成したら、ML.EVALUATE 関数を使用してモデルの性能を評価します。ML.EVALUATE 関数は、実際のデータに対する予測値を評価します。</p>
-<p>モデルの評価に使用するクエリは次のとおりです。</p>
+        <p>前のステップでロジスティック回帰モデルを作成することができました！モデルを作成したら、実際にどれくらいの精度で予測を行えるのか、モデルの評価を行います。</p>
+<p>モデルの評価にはトレーニングに使用したデータと異なるデータを使用しなければいけません。トレーニングに使用したデータを使って評価しても正しい精度を測定できないためです。</p>
+<p>dataframe列で「evaluation」とラベル付けされているデータ(全体の10%)をモデルの評価に使用します。</p>
+<p>BigQueryMLでは<strong>ML.EVALUATE 関数</strong>を使用してモデルの性能を評価することができます。それではクエリを見てみましょう。</p>
+<aside class="warning"><p>SQLの細かい文法は理解しなくても構いません。「クエリの詳細」を読んで、何をしているのかのイメージをつけるようにしましょう。</p>
+</aside>
 <h3 is-upgraded><strong>モデルの性能を評価するクエリ</strong></h3>
 <pre><code>SELECT
   *
@@ -245,25 +251,30 @@ FROM
     )
   )</code></pre>
 <h2 is-upgraded><strong>クエリの詳細</strong></h2>
-<p>ML.EVALUATE 関数は、ステップ 1 でトレーニングされたモデルと、SELECT サブクエリによって返された評価データを取得します。この関数は、モデルに関する統計を単一行で返します。このクエリは、input_view のデータを評価データとして使用します。WHERE 句で、サブクエリに evaluation データフレームの行のみが含まれるように入力データをフィルタします。</p>
-<h2 is-upgraded><strong>ML.EVALUATE クエリを実行する</strong></h2>
-<ol type="1" start="6">
+<ul>
+<li>ML.EVALUATE 関数を用いてモデルを評価します。引数に評価するモデルと評価に使用するデータを指定します。</li>
+<li>評価するモデルとして、前のステップで作成した「census_model」を指定しています。</li>
+<li>評価用のデータはSELECT文によるクエリで読み込みます。ビュー「input_view」よりWHERE句でdataframe列の値が「evaluation」であるデータ(全体の10%)のみを抽出しています。これによりトレーニングに用いたデータと異なるデータでモデルの精度を評価することができます。</li>
+</ul>
+<h2 is-upgraded><strong>クエリの実行</strong></h2>
+<ol type="1" start="1">
 <li>Cloud Console で、[クエリを新規作成] ボタンをクリックします。</li>
 <li>[クエリエディタ] テキスト領域に、上記の クエリをコピーして貼り付けます。</li>
 <li>[実行] をクリックします。</li>
 <li>クエリが完了したら、クエリテキスト領域の下にある [結果] タブをクリックします。結果は次のようになります。</li>
 </ol>
 <p class="image-container"><img style="width: 624.00px" src="img/76d8bc0fa33c7fa6.png"></p>
-<p>ロジスティック回帰を使用しているため、結果には次の列が含まれます。</p>
+<p>ロジスティック回帰では結果に次の列が含まれます。</p>
 <ul>
-<li>precision</li>
-<li>recall</li>
-<li>accuracy(正確性)</li>
-<li>f1_score</li>
+<li>precision(適合率)</li>
+<li>recall(再現率)</li>
+<li>accuracy(正解率)</li>
+<li>f1_score(F値)</li>
 <li>log_loss</li>
 <li>roc_auc</li>
 </ul>
-<p>モデルの精度は、正確に予測された値と予測全体の比率を表します。精度が .80 の場合、予測の 80% が正しいことを意味します。</p>
+<p>モデルがどれだけ正しく予測できたかを知るにはaccuracyを見ます。accuracyが0.8の場合、80%の精度で予測できたことを意味します。</p>
+<p>実際の運用では、複数の指標を用いてモデルの性能を評価していきます。</p>
 
 
       </google-codelab-step>
