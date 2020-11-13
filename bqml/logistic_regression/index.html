@@ -28,16 +28,22 @@
                   feedback-link="https://github.com/googlecodelabs/your-first-pwapp/issues">
     
       <google-codelab-step label="イントロダクション" duration="0">
-        <p>このハンズオンではBigQuery ML を使用して、米国国勢調査の回答者のユーザー属性に基づいて、その回答者の所得が 2 つの範囲のどちらに分類されるかを予測する <a href="https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create?hl=ja#model_type" target="_blank">2 項ロジスティック回帰</a>モデルを作成します。</p>
+        <p>このハンズオンではBigQuery ML を使用して、 <a href="https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create?hl=ja#model_type" target="_blank">2 項ロジスティック回帰</a>モデルによるデータ分類の予測を体験いただきます。</p>
+<aside class="special"><p>ロジスティック回帰は教師あり学習における分類手法の1種です。2項ロジスティック回帰はデータが2種類のラベルのどちらに分類されるかを予測する機械学習モデルです。</p>
+</aside>
+<p>分析対象として、米国国勢調査のデータを使用します。年齢や職業、教育水準といった特徴から、その回答者の年収が「5万ドル超」「5万ドル以下」どちらであるかを予測します。</p>
 <h2 is-upgraded><strong>目標</strong></h2>
 <ul>
-<li>ロジスティック回帰モデルを作成する。</li>
-<li>ロジスティック回帰モデルを評価する。</li>
-<li>ロジスティック回帰モデルを使用して予測を行う。</li>
+<li>ロジスティック回帰モデルの作成・評価・予測の一連の流れを体感する</li>
+<li>特徴量とラベルを理解する</li>
+<li>モデルの精度の確認方法を理解する</li>
 </ul>
 <h2 is-upgraded><strong>料金</strong></h2>
+<p>このハンズオンではBigQueryの料金が発生します。igQueryでは毎月1TBまでのクエリは無料枠であるため、当ハンズオンの手順のみを実施する場合は無料で実施いただけます。</p>
+<p>ただしご自身のGCPプロジェクトで他の用途でもBigQueryを使われている場合は費用が発生する可能性があることあらかじめご了承ください。</p>
 <h2 is-upgraded><strong>事前準備</strong></h2>
 <p>GCP(Google Cloud Platform)を使用します。 <a href="https://www.apps-gcp.com/gcp-startup/" target="_blank">こちら</a>の手順を参考にGCPプロジェクトを作成してください。</p>
+<p>※「プロジェクトで利用するサービスを有効化」の実施は不要です。</p>
 <p>※GCPの無料トライアルをご利用いただかない場合、BigQueryMLの使用料金が発生します。予めご了承いただいた上でハンズオンを進めてください。</p>
 <h2 is-upgraded><strong>INDEX</strong></h2>
 <ol type="1" start="1">
@@ -51,6 +57,9 @@
 </ol>
 <h2 is-upgraded><strong>参考</strong></h2>
 <p>当ハンズオンはGCPの<a href="https://cloud.google.com/bigquery-ml/docs/logistic-regression-prediction?hl=ja" target="_blank">公式チュートリアル</a>をベースにしています。</p>
+<aside class="warning"><p>BigQueryMLでは標準SQLの文法を拡張した機械学習用の独自の関数を使用します。このハンズオンで扱うクエリそのものは理解いただかなくても構いませんので、モデル作成や評価のプロセスや、実際の予測結果を見ながら機械学習のイメージを体感いただければと思います。</p>
+</aside>
+<p>それでは「Next」ボタンを押してハンズオンに取り組みましょう！</p>
 
 
       </google-codelab-step>
@@ -154,7 +163,7 @@ FROM
 
       </google-codelab-step>
     
-      <google-codelab-step label="ロジスティック回帰モデルを作成する" duration="0">
+      <google-codelab-step label="トレーニングデータを使用してロジスティック回帰モデルを作成する" duration="0">
         <p>トレーニング データを確認したら、次のステップでは、そのデータを使用してロジスティック回帰モデルを作成します。</p>
 <p>CREATE MODEL ステートメントを &#39;LOGISTIC_REG&#39; オプション付きで使用することで、ロジスティック回帰モデルの作成とトレーニングが行えます。次のクエリでは、CREATE MODEL ステートメントを使用して、前のクエリで作成したビューで新しい 2 項ロジスティック回帰モデルをトレーニングしています。</p>
 <h3 is-upgraded><strong>ロジスティック回帰モデルを作成するクエリ</strong></h3>
@@ -190,7 +199,7 @@ WHERE
 
       </google-codelab-step>
     
-      <google-codelab-step label="ML.EVALUATE 関数を使用してモデルを評価する。" duration="0">
+      <google-codelab-step label="評価用のデータを使用して作成したモデルの性能を評価する" duration="0">
         <p>モデルを作成したら、ML.EVALUATE 関数を使用してモデルの性能を評価します。ML.EVALUATE 関数は、実際のデータに対する予測値を評価します。</p>
 <p>モデルの評価に使用するクエリは次のとおりです。</p>
 <h3 is-upgraded><strong>モデルの性能を評価するクエリ</strong></h3>
@@ -231,7 +240,7 @@ FROM
 
       </google-codelab-step>
     
-      <google-codelab-step label="ML.PREDICT 関数を使用して所得階層を予測する" duration="0">
+      <google-codelab-step label="予測用のデータを使用して所得階層を予測する" duration="0">
         <p>特定の回答者が属する所得階層を特定するには、ML.PREDICT 関数を使用します。次のクエリは、prediction データフレーム内のすべての回答者の所得階層を予測します。</p>
 <h3 is-upgraded><strong>prediction データフレーム内のすべての回答者の所得階層を予測するクエリ</strong></h3>
 <pre><code>SELECT

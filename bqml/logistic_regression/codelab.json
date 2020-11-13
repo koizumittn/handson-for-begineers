@@ -3,7 +3,7 @@
   "format": "html",
   "prefix": "https://storage.googleapis.com",
   "mainga": "UA-49880327-14",
-  "updated": "2020-11-11T23:49:04Z",
+  "updated": "2020-11-13T07:15:16Z",
   "id": "logistic_regression",
   "duration": 0,
   "title": "国勢調査データに基づいた分類モデルの構築と使用",
