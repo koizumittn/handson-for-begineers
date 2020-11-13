@@ -25,7 +25,7 @@
                   id="logistic_regression"
                   title="ロジスティック回帰モデルを用いた2値分類の体験ハンズオン"
                   environment="web"
-                  feedback-link="https://github.com/googlecodelabs/your-first-pwapp/issues">
+                  feedback-link="https://github.com/koizumittn/handson-for-begineers/issues">
     
       <google-codelab-step label="イントロダクション" duration="2">
         <p>このハンズオンではBigQuery ML を使用して、 <a href="https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create?hl=ja#model_type" target="_blank">2 項ロジスティック回帰</a>モデルによるデータ分類の予測を体験いただきます。</p>
@@ -37,6 +37,7 @@
 <li>ロジスティック回帰モデルの作成・評価・予測の一連の流れを体感する</li>
 <li>特徴量とラベルを理解する</li>
 <li>モデルの精度の確認方法を理解する</li>
+<li>モデルを使用して予測を行い、予測結果を確認する</li>
 </ul>
 <h2 is-upgraded><strong>料金</strong></h2>
 <p>このハンズオンではBigQueryの料金が発生します。BigQueryでは毎月1TBまでのクエリは無料枠であるため、当ハンズオンの手順のみを実施する場合は無料で実施いただけます。</p>
@@ -88,7 +89,7 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="データを確認する" duration="2">
+      <google-codelab-step label="データを確認する" duration="4">
         <p>今回のトレーニングで使用するデータをSQLを用いて確認します。Google Cloudが公開する一般データセットより、米国国勢調査による成人の収入データが記録されている「census_adult_imcome」を使用します。</p>
 <aside class="special"><p>「census」は国勢調査のことです</p>
 </aside>
@@ -124,7 +125,7 @@ LIMIT
 
       </google-codelab-step>
     
-      <google-codelab-step label="トレーニング データを選択する" duration="3">
+      <google-codelab-step label="トレーニング データを選択する" duration="4">
         <p>確認したテーブルにはデータの重複や予測に不要なものなどが混在していました。精度よくモデルがトレーニングできるよう、<strong>データの前処理</strong>を行いましょう。今回のトレーニングに必要な列のみを抽出していきます。</p>
 <p>このハンズオンでは、次の属性に基づいて国勢調査回答者の所得を予測します。</p>
 <ul>
@@ -280,7 +281,7 @@ FROM
 
       </google-codelab-step>
     
-      <google-codelab-step label="予測用のデータを使用して所得階層を予測する" duration="3">
+      <google-codelab-step label="予測用のデータを使用して所得階層を予測する" duration="5">
         <p>それでは予測用のデータを使用して、実際に所得階層を予測してみましょう！</p>
 <p>dataframe列で「prediction」とラベル付けされているデータ(全体の10%)を予測に使用します。</p>
 <p>BigQueryMLでは<strong>ML.PREDICT 関数</strong>によりモデルを使用した予測を行います。それではクエリを見てみましょう。</p>
@@ -334,6 +335,25 @@ FROM
 <li>または、プロジェクトを保存して、データセットを削除する。</li>
 </ul>
 <p><a href="https://qiita.com/sekitaka_1214/items/e11287b78adf3f468d7f" target="_blank">こちら</a>の記事もご参照ください。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="まとめ" duration="0">
+        <p>お疲れ様でした！ハンズオンは以上になります。</p>
+<p>このハンズオンでは以下のことを学びました。</p>
+<aside class="special"><ul>
+<li>ロジスティック回帰モデルの作成・評価・予測の一連の流れを体感する</li>
+<li>特徴量とラベルを理解する</li>
+<li>モデルの精度の確認方法を理解する</li>
+<li>モデルを使用して予測を行い、予測結果を確認する</li>
+</ul>
+</aside>
+<h2 is-upgraded><strong>今後の学習</strong></h2>
+<ul>
+<li>BigQueryMLの<a href="https://cloud.google.com/bigquery-ml/docs/tutorials?hl=ja" target="_blank">公式ドキュメント</a>に他のチュートリアルもございますので、興味のある方はお取り組みください。</li>
+<li>YouTubeの<a href="https://www.youtube.com/watch?v=KNAWp2S3w94" target="_blank">TensorFlowチャンネル</a>に機械学習入門の解説動画があるのでおすすめです。自動翻訳機能を使い日本語字幕で視聴することも可能です。</li>
+</ul>
 
 
       </google-codelab-step>

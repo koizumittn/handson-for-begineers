@@ -3,9 +3,9 @@
   "format": "html",
   "prefix": "https://storage.googleapis.com",
   "mainga": "UA-49880327-14",
-  "updated": "2020-11-13T20:22:21Z",
+  "updated": "2020-11-13T20:34:51Z",
   "id": "logistic_regression",
-  "duration": 25,
+  "duration": 30,
   "title": "ロジスティック回帰モデルを用いた2値分類の体験ハンズオン",
   "authors": "Tetsunosuke Koizumi",
   "summary": "国勢調査データに基づいた分類モデルの構築と使用",
@@ -20,6 +20,6 @@
   "tags": [
     "web"
   ],
-  "feedback": "https://github.com/googlecodelabs/your-first-pwapp/issues",
+  "feedback": "https://github.com/koizumittn/handson-for-begineers/issues",
   "url": "logistic_regression"
 }
