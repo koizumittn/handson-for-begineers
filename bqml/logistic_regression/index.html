@@ -274,13 +274,18 @@ FROM
 <li>roc_auc</li>
 </ul>
 <p>モデルがどれだけ正しく予測できたかを知るにはaccuracyを見ます。accuracyが0.8の場合、80%の精度で予測できたことを意味します。</p>
-<p>実際の運用では、複数の指標を用いてモデルの性能を評価していきます。</p>
+<aside class="special"><p>実際の運用では1つではなく複数の指標を用いて、多面的にモデルの性能を評価していきます。</p>
+</aside>
 
 
       </google-codelab-step>
     
       <google-codelab-step label="予測用のデータを使用して所得階層を予測する" duration="3">
-        <p>特定の回答者が属する所得階層を特定するには、ML.PREDICT 関数を使用します。次のクエリは、prediction データフレーム内のすべての回答者の所得階層を予測します。</p>
+        <p>それでは予測用のデータを使用して、実際に所得階層を予測してみましょう！</p>
+<p>dataframe列で「prediction」とラベル付けされているデータ(全体の10%)を予測に使用します。</p>
+<p>BigQueryMLでは<strong>ML.PREDICT 関数</strong>によりモデルを使用した予測を行います。それではクエリを見てみましょう。</p>
+<aside class="warning"><p>SQLの細かい文法は理解しなくても構いません。「クエリの詳細」を読んで、何をしているのかのイメージをつけるようにしましょう。</p>
+</aside>
 <h3 is-upgraded><strong>prediction データフレーム内のすべての回答者の所得階層を予測するクエリ</strong></h3>
 <pre><code>SELECT
   *
@@ -296,8 +301,12 @@ FROM
      )
   )</code></pre>
 <h2 is-upgraded><strong>クエリの詳細</strong></h2>
-<p>ML.PREDICT 関数は、モデルと、「prediction」データフレームの行のみを含めるようにフィルタされた input_view のデータを使用して、結果を予測します。先頭の SELECT ステートメントで、ML.PREDICT 関数の出力を取得します。</p>
-<h2 is-upgraded><strong>ML.PREDICT クエリを実行する</strong></h2>
+<ul>
+<li>ML.PREDICT 関数によりモデルを使用した予測を行います。引数にモデルと予測したいデータを指定します。</li>
+<li>予測に使用するモデルとして「census_model」を指定しています。</li>
+<li>予測するデータはSELECT文によるクエリで読み込みます。ビュー「input_view」よりWHERE句でdataframe列の値が「prediction」であるデータ(全体の10%)のみを抽出しています。これはトレーニングおよび評価に用いたデータと異なるため、モデルにとって未知のデータとして扱うことができます。</li>
+</ul>
+<h2 is-upgraded><strong>クエリの実行</strong></h2>
 <ol type="1" start="1">
 <li>Cloud Console で、[クエリを新規作成] ボタンをクリックします。</li>
 <li>[クエリエディタ] テキスト領域に、上記の クエリをコピーして貼り付けます。</li>
@@ -305,6 +314,15 @@ FROM
 <li>クエリが完了したら、クエリテキスト領域の下にある [結果] タブをクリックします。結果は次のようになります。</li>
 </ol>
 <p class="image-container"><img style="width: 624.00px" src="img/a4fd31b1572ad5eb.png"></p>
+<h2 is-upgraded><strong>予測結果の確認</strong></h2>
+<ul>
+<li>predicted_income_bracket列はモデルによる予測結果です。それぞれのデータごとに「&lt;=50K」「&gt;50K」のいずれかに分類されています。</li>
+<li>ロジスティック回帰では、各ラベルに対する確率を求め、最も高い確率を得られたラベルを予測値としています。predicted_income_bracket_probsにはラベル「&lt;=50K」「&gt;50K」それぞれについて、モデルが予測した確率が出力されています。</li>
+<li>通常、予測は未知のデータに対して行いますが、今回の予測データには正解の情報も含まれているため、予測結果が正解かどうかを確認できます。右から2番目のincome_bracket列が真の正解を表します。</li>
+</ul>
+<p class="image-container"><img style="width: 516.50px" src="img/611ffb95f8440768.png"></p>
+<aside class="special"><p>モデルを評価した際の正解率と同じくらいになっているでしょうか？予測結果と正解データを見比べてみましょう。</p>
+</aside>
 
 
       </google-codelab-step>
