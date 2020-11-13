@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <meta name="theme-color" content="#4F7DC9">
   <meta charset="UTF-8">
-  <title>国勢調査データに基づいた分類モデルの構築と使用</title>
+  <title>ロジスティック回帰モデルを用いた2値分類の体験ハンズオン</title>
   <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
   <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
@@ -23,11 +23,11 @@
   <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
   <google-codelab codelab-gaid=""
                   id="logistic_regression"
-                  title="国勢調査データに基づいた分類モデルの構築と使用"
+                  title="ロジスティック回帰モデルを用いた2値分類の体験ハンズオン"
                   environment="web"
                   feedback-link="https://github.com/googlecodelabs/your-first-pwapp/issues">
     
-      <google-codelab-step label="イントロダクション" duration="0">
+      <google-codelab-step label="イントロダクション" duration="2">
         <p>このハンズオンではBigQuery ML を使用して、 <a href="https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create?hl=ja#model_type" target="_blank">2 項ロジスティック回帰</a>モデルによるデータ分類の予測を体験いただきます。</p>
 <aside class="special"><p>ロジスティック回帰は教師あり学習における分類手法の1種です。2項ロジスティック回帰はデータが2種類のラベルのどちらに分類されるかを予測する機械学習モデルです。</p>
 </aside>
@@ -50,9 +50,9 @@
 <li>データセットを作成する</li>
 <li>データを確認する</li>
 <li>トレーニングデータを選択する</li>
-<li>ロジスティック回帰モデルを作成する</li>
-<li>ML EVALUATEクエリを実行する</li>
-<li>ML.PREDICT関数を使用して所得階層を予測する</li>
+<li>トレーニングデータを使用してロジスティック回帰モデルを作成する</li>
+<li>評価用のデータを使用して作成したモデルの性能を評価する</li>
+<li>予測用のデータを使用して所得階層を予測する</li>
 <li>クリーンアップ</li>
 </ol>
 <h2 is-upgraded><strong>参考</strong></h2>
@@ -64,8 +64,10 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="データセットを作成する" duration="0">
+      <google-codelab-step label="データセットを作成する" duration="2">
         <p>最初のステップとして、モデルを格納する BigQuery データセットを作成します。データセットを作成する手順は次のとおりです。</p>
+<aside class="special"><p>BigQueryのデータセットとはテーブルやビューなどを格納する論理的なコンテナです。フォルダのようなものとイメージしてください。このハンズオンではデータセットを作成後、その中にビューや機械学習モデルを作成していきます。学習用データは外部の公開データを読み込んで使用します。</p>
+</aside>
 <ol type="1" start="1">
 <li>Cloud Console の <a href="https://console.cloud.google.com/bigquery?hl=ja" target="_blank">BigQuery ページ</a>に移動します。以下のような画面に遷移します。</li>
 </ol>
@@ -86,8 +88,8 @@
 
       </google-codelab-step>
     
-      <google-codelab-step label="データを確認する" duration="0">
-        <p>今回のトレーニングで使用するデータをSQLを用いて確認します。Google Cloudが公開する一般データセットを使用します。</p>
+      <google-codelab-step label="データを確認する" duration="2">
+        <p>今回のトレーニングで使用するデータをSQLを用いて確認します。Google Cloudが公開する一般データセットより、米国国勢調査による成人の収入データが記録されている「census_adult_imcome」を使用します。</p>
 <ol type="1" start="1">
 <li>Cloud Console で、[クエリを新規作成] ボタンをクリックします。</li>
 <li>[クエリエディタ] テキスト領域に、次の標準 SQL クエリを入力します。</li>
@@ -99,6 +101,8 @@ FROM
   `bigquery-public-data.ml_datasets.census_adult_income`
 LIMIT
   100;</code></pre>
+<aside class="special"><p><strong>SELECT文</strong>はデータを取得するためのSQLであり、読み取るテーブルを<strong>FROM句</strong>で指定します。BigQueryでは[プロジェクト名].[データセット名].[テーブル名]の形式で指定しますが、上記のクエリではGoogleが公開する一般データセットを読み込んでいます。イントロダクションでもお伝えした通り、SQLの詳細は理解いただかなくても構いません。</p>
+</aside>
 <ol type="1" start="3">
 <li>[実行] をクリックします。</li>
 </ol>
@@ -107,12 +111,18 @@ LIMIT
 <li>クエリが完了したら、クエリテキスト領域の下にある [結果] タブをクリックします。結果は次のようになります。</li>
 </ol>
 <p class="image-container"><img style="width: 624.00px" src="img/755de631feb506c6.png"></p>
-<p>クエリ結果から、census_adult_income テーブルの income_bracket 列には &lt;=50K または &gt;50K の 2 つの値のどちらかしかないことがわかります。また、census_adult_income テーブルの列 education と education_num は同じデータを異なる形式で表したものであることがわかります。functional_weight 列は、国勢調査機関が特定の行に対応すると考えている人数で、この列の値は、特定の行の income_bracket の値とは関連性がないと思われます。</p>
+<p>クエリ結果を確認してみましょう。</p>
+<ul>
+<li>income_bracket列は収入レベルのカテゴリを表します。 列には &lt;=50K(5万ドル以下) または &gt;50K(5万ドル以下) の 2 つの値のどちらかしかないことがわかります。</li>
+<li>「他の列の情報からincome_bracket列がどちらの収入レベルに分類されるかを予測できるか？」がこのハンズオンのポイントです</li>
+<li>education列 と education_num列 は同じデータ(最終学歴)を異なる形式で表したものであることがわかります。モデルの学習にあたってはどちらか一方のみで十分です。一般に数値データの方が扱いやすいため、後続のステップではeducation_num列を使用します。</li>
+<li>functional_weight 列は、国勢調査機関が特定の行に対応すると考えている人数で、予測したい収入レベルとは関連性がないと思われます。よってモデルの学習には使用しません。ただし、後続のステップでは収入レベルの予測に関連性がないことを利用して、データ全体を「学習用データ」「評価用データ」「予測用データ」に分けることにfunctional_weight列を使用します。</li>
+</ul>
 
 
       </google-codelab-step>
     
-      <google-codelab-step label="トレーニング データを選択する" duration="0">
+      <google-codelab-step label="トレーニング データを選択する" duration="2">
         <p>次に、ロジスティック回帰モデルのトレーニングに使用するデータを選択します。このチュートリアルでは、次の属性に基づいて国勢調査回答者の所得を予測します。</p>
 <ul>
 <li>年齢(age)</li>
@@ -165,7 +175,7 @@ FROM
 
       </google-codelab-step>
     
-      <google-codelab-step label="トレーニングデータを使用してロジスティック回帰モデルを作成する" duration="0">
+      <google-codelab-step label="トレーニングデータを使用してロジスティック回帰モデルを作成する" duration="5">
         <p>トレーニング データを確認したら、次のステップでは、そのデータを使用してロジスティック回帰モデルを作成します。</p>
 <p>CREATE MODEL ステートメントを &#39;LOGISTIC_REG&#39; オプション付きで使用することで、ロジスティック回帰モデルの作成とトレーニングが行えます。次のクエリでは、CREATE MODEL ステートメントを使用して、前のクエリで作成したビューで新しい 2 項ロジスティック回帰モデルをトレーニングしています。</p>
 <h3 is-upgraded><strong>ロジスティック回帰モデルを作成するクエリ</strong></h3>
@@ -201,7 +211,7 @@ WHERE
 
       </google-codelab-step>
     
-      <google-codelab-step label="評価用のデータを使用して作成したモデルの性能を評価する" duration="0">
+      <google-codelab-step label="評価用のデータを使用して作成したモデルの性能を評価する" duration="4">
         <p>モデルを作成したら、ML.EVALUATE 関数を使用してモデルの性能を評価します。ML.EVALUATE 関数は、実際のデータに対する予測値を評価します。</p>
 <p>モデルの評価に使用するクエリは次のとおりです。</p>
 <h3 is-upgraded><strong>モデルの性能を評価するクエリ</strong></h3>
@@ -242,7 +252,7 @@ FROM
 
       </google-codelab-step>
     
-      <google-codelab-step label="予測用のデータを使用して所得階層を予測する" duration="0">
+      <google-codelab-step label="予測用のデータを使用して所得階層を予測する" duration="3">
         <p>特定の回答者が属する所得階層を特定するには、ML.PREDICT 関数を使用します。次のクエリは、prediction データフレーム内のすべての回答者の所得階層を予測します。</p>
 <h3 is-upgraded><strong>prediction データフレーム内のすべての回答者の所得階層を予測するクエリ</strong></h3>
 <pre><code>SELECT
@@ -272,7 +282,7 @@ FROM
 
       </google-codelab-step>
     
-      <google-codelab-step label="クリーンアップ" duration="0">
+      <google-codelab-step label="クリーンアップ" duration="2">
         <p>このチュートリアルで使用したリソースについて、Google Cloud Platform アカウントに課金されないようにする手順は次のとおりです。</p>
 <ul>
 <li>作成したプロジェクトを削除する。</li>
