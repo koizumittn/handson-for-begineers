@@ -1,0 +1,819 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>AWSスケーラブルWebサイト構築ハンズオン</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="aws_scalable_handson"
+                  title="AWSスケーラブルWebサイト構築ハンズオン"
+                  environment="web"
+                  feedback-link="">
+    
+      <google-codelab-step label="イントロダクション" duration="1">
+        <p>このハンズオンでは<a href="https://pages.awscloud.com/event_JAPAN_Hands-on-for-Beginners-Scalable_LP.html?trk=aws_introduction_page" target="_blank">AWS Hands-on for Beginners 〜 スケーラブルウェブサイト構築編 〜</a>をベースに、WordPressを使ったブログサイトの構築を通じて、スケーラブルな Web システム構築方法を学びます。主に取り扱う AWS サービスはAmazon  VPC、Amazon EC2、Amazon RDS、ELB の4つです。</p>
+<h2 is-upgraded><strong>目標</strong></h2>
+<ul>
+<li>AWSの基本サービス(VPC、EC2、RDS、ELB)の概念を理解し基本的な操作を身につける</li>
+<li>クラウドの特性を活かしたスケーラブルなインフラストラクチャの構成方法を理解する</li>
+</ul>
+<h2 is-upgraded><strong>料金</strong></h2>
+<p>AWSの<a href="https://aws.amazon.com/jp/free" target="_blank">12ヶ月間無料</a>を使用可能な場合はその枠内で実施可能です。12ヶ月無料枠が利用できない場合はAWSの利用コストがかかります。予めご了承ください。</p>
+<h2 is-upgraded><strong>ハンズオン全体像</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img/c1420ab3f3c57b56.png"></p>
+<p>Webサーバ-データベースの2層アーキテクチャを題材にAWSでスケーラブルなWebサイトを構築する方法を学びます。</p>
+<p>Webサーバ層としてWordPressをセットアップしたEC2インスタンスを使用します。データベース層にはAmazon RDS(MySQL)を使用します。</p>
+<p>Webサーバ層のEC2インスタンスは2台構成として冗長化し、ELBを用いて負荷分散を行います。</p>
+<aside class="warning"><p>データベース層も冗長化が可能ですが、無料枠の範囲を越えてしまうため、当ハンズオンでは実施しません。</p>
+</aside>
+<h3 is-upgraded><strong>ハンズオンの流れ</strong></h3>
+<ol type="1" start="1">
+<li>VPCとサブネットを作成します</li>
+<li>WordPressがインストールされたWebサーバ(EC2インスタンス)を作成します</li>
+<li>データベースとしてRDSインスタンス(MySQL)を作成します</li>
+<li>ロードバランサー(ALB)を作成し、EC2インスタンスを配下に登録します</li>
+<li>WordPressの初期設定を行い、ブログが表示できることを確認します</li>
+<li>WordPress設定済みのAMIを作成します</li>
+<li>AMIから2つめのWebサーバ(EC2インスタンス)を作成します</li>
+<li>2つめのEC2インスタンスをELB配下に登録し、Webトラフィックの負荷分散を行います</li>
+</ol>
+<h2 is-upgraded><strong>事前準備</strong></h2>
+<p>AWSを使用します。 <a href="https://aws.amazon.com/jp/register-flow/" target="_blank">こちら</a>の手順を参考にAWSアカウントを作成してください。</p>
+<p>既にAWSアカウントをお持ちの方はそちらを使用いただいても構いませんが、既存のリソースと混同しないため可能でしたら新規にアカウントを作成いただくことをお勧めします。</p>
+<p>本ハンズオンはAdministratorAccessロールを持ったIAMユーザで行っていただく前提となっています。</p>
+<h2 is-upgraded><strong>参考</strong></h2>
+<p>当ハンズオンは<a href="https://pages.awscloud.com/event_JAPAN_Hands-on-for-Beginners-Scalable_LP.html?trk=aws_introduction_page" target="_blank">AWS Hands-on for Beginners 〜 スケーラブルウェブサイト構築編 〜</a>をベースにしています。</p>
+<p>それでは「Next」ボタンを押してハンズオンに取り組みましょう！</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="AWSマネジメントコンソールへのログイン" duration="3">
+        <p><a href="https://console.aws.amazon.com/" target="_blank">こちら</a>のリンクより事前に作成したAWSアカウントの認証情報を入力し、AWSマネジメントコンソールにログインします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/682e67534cc4512d.png"></p>
+<h2 is-upgraded><strong>リージョンの選択</strong></h2>
+<p>今回のハンズオンでは東京リージョン(ap-northeast-1)を使用します。</p>
+<p>東京リージョンが選択されていない場合は画面右上より東京リージョンを選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/39b1bfd9574ae4b0.png"></p>
+<h2 is-upgraded><strong>マネジメントコンソールの言語設定</strong></h2>
+<p>画面左下のバーより選択可能です。お好みの言語を選択いただいて構いません。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/12de14b6823f7072.png"></p>
+<aside class="special"><p>本手順では日本語に設定した画面を表示します。</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Amazon VPCの作成" duration="5">
+        <p>上部の検索バーで「VPC」と入力し、サービス欄のVPCをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/acfbb167eaa30eb.png"></p>
+<p>VPCのサービス画面に遷移します。</p>
+<p>AWSアカウント作成時にデフォルトのVPCが既に1つ作成されていますが、本ハンズオンでは新規にVPCを作成します。</p>
+<p>「VPCウィザードの起動」ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/291aedf429aa850a.png"></p>
+<p>いくつかVPCのタイプが選択できますが、今回はデフォルトで選択されている「<strong>1個のパブリックサブネットを持つVPC</strong>」を選択します。</p>
+<aside class="special"><p>パブリックサブネットとはインターネットにアクセス可能なサブネットのことです。関連付けられるルーティングテーブルにはインターネットゲートウェイへのルートを持ちます。</p>
+</aside>
+<p class="image-container"><img style="width: 624.00px" src="img/a1f4464cce7c78f2.png"></p>
+<p>以下のように設定し、「VPCの作成」をクリックします。</p>
+<p>記載の無い項目はデフォルトのままで構いません。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>IPv4 CIDR ブロック</p>
+</td><td colspan="1" rowspan="1"><p>10.0.0.0/16 (デフォルトのまま)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VPC 名</p>
+</td><td colspan="1" rowspan="1"><p>handson-vpc</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>パブリックサブネットの IPv4 CIDR</p>
+</td><td colspan="1" rowspan="1"><p>10.0.0.0/24(デフォルトのまま)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>アベイラビリティゾーン</p>
+</td><td colspan="1" rowspan="1"><p>ap-northeast-1a</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>サブネット名</p>
+</td><td colspan="1" rowspan="1"><p>パブリックサブネット-1a</p>
+<p>(末尾に「-1a」を追加します)</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 496.01px" src="img/dd177beee8c3f2f3.png"></p>
+<p>正しく入力できていることを確認し「VPCの作成」をクリックします。</p>
+<aside class="special"><p>「VPCは正常に作成されました」と表示されればOKです。</p>
+<p>ここではVPCの他にサブネット、インターネットゲートウェイ、ルーティングテーブルが作成され、これらの関連付けも行われています。</p>
+</aside>
+<p>「OK」ボタンをクリックします。</p>
+<p>以下のように「handson-vpc」が表示されます。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/7db1fff58eececb1.png"></p>
+<aside class="warning"><p>「handson-vpc」が表示されない場合はブラウザをリロードしてください。</p>
+</aside>
+<p>2つのVPCが表示されているため、「VPCフィルタリング」から作成したVPC「handson-vpc」をクリックし、マネジメントコンソールに表示させる情報を絞り込みましょう。作業ミスのリスクを低減することができます。</p>
+<p class="image-container"><img style="width: 495.50px" src="img/54c58b97902ea719.png"></p>
+<aside class="warning"><p>フィルタが上手く動作しない場合はブラウザをリロードしてください。</p>
+</aside>
+<p>それでは次のステップに進み、残り3つのサブネットを作成していきましょう。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="サブネットの作成" duration="3">
+        <p>残りの3つのサブネットを作成していきましょう！</p>
+<p>左側のナビゲーションバーより「サブネット」をクリックし、サブネットのメニューに遷移します。</p>
+<p class="image-container"><img style="width: 488.50px" src="img/3e69a0365038f8f1.png"></p>
+<p>「サブネットの作成」をクリックします。</p>
+<p class="image-container"><img style="width: 458.50px" src="img/c40a4ef21ca231f3.png"></p>
+<p>VPCのメニューにてドロップダウンリストから作成したVPC「handson-vpc」を選択します。</p>
+<p class="image-container"><img style="width: 525.50px" src="img/9947018fb9ebe85f.png"></p>
+<p><strong>「サブネットの設定」</strong>にて3つのサブネットを順に設定していきます。</p>
+<aside class="warning"><p>「サブネット名」「アベイラビリティゾーン」「IPv4 CIDRブロック」の3つに間違いがないようご注意ください。</p>
+</aside>
+<h2 is-upgraded>パブリックサブネット-1cの設定</h2>
+<p>まず、「サブネット1」を以下のように設定しましょう。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>サブネット名</p>
+</td><td colspan="1" rowspan="1"><p>パブリックサブネット-1c</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>アベイラビリティーゾーン</p>
+</td><td colspan="1" rowspan="1"><p>ap-northeast-1c</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>IPv4 CIDRブロック</p>
+</td><td colspan="1" rowspan="1"><p>10.0.1.0/24</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 489.50px" src="img/e5e850b7acc144cf.png"></p>
+<h2 is-upgraded><strong>プライベートサブネット-1aの設定</strong></h2>
+<p>次に、「新しいサブネットを追加」をクリックして「サブネット2」を以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>サブネット名</p>
+</td><td colspan="1" rowspan="1"><p>プライベートサブネット-1a</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>アベイラビリティーゾーン</p>
+</td><td colspan="1" rowspan="1"><p>ap-northeast-1a</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>IPv4 CIDRブロック</p>
+</td><td colspan="1" rowspan="1"><p>10.0.2.0/24</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 447.50px" src="img/e132e3e1ffa2030.png"></p>
+<h2 is-upgraded><strong>プライベートサブネット-1cの設定</strong></h2>
+<p>もう一度「新しいサブネットを追加」をクリックして「サブネット3」を以下のように設定します。すべての設定が完了したら「サブネットを作成」をクリックします。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>サブネット名</p>
+</td><td colspan="1" rowspan="1"><p>プライベートサブネット-1c</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>アベイラビリティーゾーン</p>
+</td><td colspan="1" rowspan="1"><p>ap-northeast-1c</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>IPv4 CIDRブロック</p>
+</td><td colspan="1" rowspan="1"><p>10.0.3.0/24</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 443.50px" src="img/989ba984db9f10ce.png"></p>
+<aside class="special"><p>「3件のサブネットが正常に作成されました」と表示されればOKです。</p>
+</aside>
+<p>改めてhandson-vpc内に作成されたサブネットの一覧を表示しましょう。一度「フィルターをクリア」をクリックし、左側の「VPCでフィルタリング」からhandson-vpcを選択します。</p>
+<p>Name列やIPv4 CIDR列で並び替えしたりして、4つのサブネットが正しく作成されていることを確認しましょう。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/d80ea6b8cbd0ef14.png"></p>
+<aside class="special"><p>アベイラビリティゾーンやIPアドレス範囲が正しく設定されていることを確認しましょう。</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ルートテーブルの設定" duration="3">
+        <p>パブリックサブネットは直接インターネットから接続するため、インターネットゲートウェイにアクセスできる必要があります。反対にプライベートサブネットはインターネットからの接続から保護(隔離するため)、インターネットゲートウェイには接続しません。</p>
+<p>これらはサブネットに関連付けるルートテーブルにより制御します。</p>
+<p>サブネットメニュー画面にて「パブリックサブネット-1a」を選択し、「ルートテーブル」タグを選択します。</p>
+<p class="image-container"><img style="width: 529.50px" src="img/69873086fdf40384.png"></p>
+<p>ルートテーブルの情報を確認してみましょう。</p>
+<p class="image-container"><img style="width: 543.50px" src="img/78a46a1a40625c48.png"></p>
+<aside class="special"><p>0.0.0.0/0(デフォルトルート)にインターネットゲートウェイが設定されていることが分かります。インターネットゲートウェイはVPCとインターネットを繋ぐドアのようなものです。よってこのサブネットはインターネットと接続することができます。</p>
+</aside>
+<p>パブリックサブネット-1aはVPC作成時にセットで作成されたものでした。インターネット接続可能となっているため、ルートテーブルはこのままで問題ありません。</p>
+<p>次に「パブリックサブネット-1c」のルートテーブルを見てみましょう。</p>
+<p class="image-container"><img style="width: 526.50px" src="img/e9a931ce10990653.png"></p>
+<p class="image-container"><img style="width: 536.50px" src="img/4aa69b0568170ff4.png"></p>
+<aside class="special"><p>インターネットゲートウェイへのルートが存在していないことが分かります。よってこのサブネットはインターネットと接続することができません。</p>
+</aside>
+<p>「パブリックサブネット-1c」は手動で作成したため、インターネットゲートウェイへのルートが設定されていませんでした。</p>
+<p>インターネットへ接続できるようにするために、ルートテーブルの設定を行いましょう。</p>
+<p>「ルートテーブルの関連付けを編集」をクリックします。</p>
+<p class="image-container"><img style="width: 582.50px" src="img/70db99db2e4c5239.png"></p>
+<p>「ルートテーブルID」をメインルートテーブルでは無いものに設定します。</p>
+<p class="image-container"><img style="width: 535.50px" src="img/288a4b9d7c7f8577.png"></p>
+<aside class="warning"><p>ルートテーブルIDは人によって異なります。</p>
+</aside>
+<p>インターネットゲートウェイへのルートが存在することを確認し「保存」ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 536.50px" src="img/6bb42580d22d42c5.png"></p>
+<p>「サブネット(subnet-xxx)はルートテーブル(rtb-xxx)に正常に関連付けられました」と表示されれば完了です。これでパブリックサブネット-1cはインターネットに接続できるようになりました！</p>
+<aside class="special"><p>ルートテーブルはサブネットと独立したリソースとして扱われ、サブネットに関連付けられます。これにより同じルートテーブルの使い回しが可能となり、運用性が高まります。</p>
+</aside>
+<p>「プライベートサブネット-1a」「プライベートサブネット-1c」のルートテーブルも確認してみましょう。インターネットゲートウェイへのルートは存在しません。</p>
+<p>プライベートサブネットはインターネットからアクセスできないことを目的としていますので、このままで問題ありません。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Amazon EC2の作成" duration="5">
+        <p>EC2インスタンスを作成し、WordPressをインストールしていきます！</p>
+<p>画面上部の検索バーに「EC2」と入力し、EC2の管理画面に遷移しましょう。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/799cb602dfe78381.png"></p>
+<p>画面中央やや下の「インスタンスを起動」をクリックします。</p>
+<p class="image-container"><img style="width: 533.50px" src="img/ccdc43d953b6e6ff.png"></p>
+<h2 is-upgraded><strong>ステップ1：Amazon マシンイメージ(AMI)</strong></h2>
+<p>一番上の「Amazon Linux 2 AMI」を選択します。</p>
+<p class="image-container"><img style="width: 546.50px" src="img/f303561ff3412bb3.png"></p>
+<aside class="special"><p>AMI(Amazon Machine Image)はEC2インスタンスのテンプレートです。AWSが公式に提供するAMIのほか、コミュニティベースのものやユーザが独自にAMIを作成することも可能です。</p>
+</aside>
+<h2 is-upgraded><strong>ステップ2：インスタンスタイプの選択</strong></h2>
+<p>インスタンスタイプはEC2インスタンスのマシンスペック(CPUやメモリ量)を決定します。</p>
+<p>今回は無料枠に収まるよう、サイズの小さい「t2.micro」を選択します。</p>
+<p>「次のステップ：インスタンスの詳細の設定」をクリックします。</p>
+<p class="image-container"><img style="width: 545.50px" src="img/16e6558c4d8a1b1e.png"></p>
+<h2 is-upgraded><strong>ステップ 3: インスタンスの詳細の設定</strong></h2>
+<p>EC2インスタンスのネットワークやWordPressをインストールするスクリプトなどを設定していきます。</p>
+<h3 is-upgraded><strong>ネットワークの設定</strong></h3>
+<p>「ネットワーク」「サブネット」「自動割り当てパブリックIP」を以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>ネットワーク</p>
+</td><td colspan="1" rowspan="1"><p>handson-vpc</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>サブネット</p>
+</td><td colspan="1" rowspan="1"><p>パブリックサブネット-1a</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>自動割り当てパブリックIP</p>
+</td><td colspan="1" rowspan="1"><p>有効</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 624.00px" src="img/cda0ab436869c7f4.png"></p>
+<aside class="special"><p>インスタンスがインターネットに接続するためにはパブリックIPが必要です。</p>
+</aside>
+<h3 is-upgraded><strong>WordPressをインストールする起動スクリプトの設定</strong></h3>
+<p>一番下までスクロールします。</p>
+<p>「ユーザーデータ」の項目で「テキストで」にチェックが入っていることを確認し、</p>
+<p>以下のコードをテキストボックスにコピー&amp;ペーストします。</p>
+<p><strong>ユーザーデータに貼り付けるコード</strong></p>
+<pre><code>#!/bin/bash
+
+# パッケージのアップデートとインストール
+yum -y update
+amazon-linux-extras install php7.2 -y
+yum -y install mysql httpd php-mbstring php-xml
+
+# WordPressのインストール
+wget http://ja.wordpress.org/latest-ja.tar.gz -P /tmp/
+tar zxvf /tmp/latest-ja.tar.gz -C /tmp
+cp -r /tmp/wordpress/* /var/www/html/
+chown apache:apache -R /var/www/html
+
+# WordPressの自動起動を有効化
+systemctl enable httpd.service
+systemctl start httpd.service</code></pre>
+<p class="image-container"><img style="width: 624.00px" src="img/669b24ac5d522d9f.png"></p>
+<aside class="special"><p>ユーザーデータに設定したコードはインスタンス起動時に実行されます。ここではWordPressのインストールと起動設定を行っており、これによってインスタンス起動時にWordPressが立ち上がった状態になります。</p>
+</aside>
+<p>「次のステップ：ストレージの追加」をクリックします。</p>
+<h2 is-upgraded><strong>ステップ4：ストレージの追加</strong></h2>
+<p>デフォルトの設定のまま、「次のステップ：タグの追加」をクリックします。</p>
+<h2 is-upgraded><strong>ステップ5：タグの追加</strong></h2>
+<p>作成するEC2インスタンスに名前をつけましょう。</p>
+<p>「タグの追加」をクリックし、以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>キー</p>
+</td><td colspan="1" rowspan="1"><p>Name</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>値</p>
+</td><td colspan="1" rowspan="1"><p>webserver#1</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 624.00px" src="img/6ed8342ce1b5af7c.png"></p>
+<aside class="special"><p>Nameタグは特別なタグの一種でその名の通りリソースの名前を表します。Nameタグに設定された値はマネジメントコンソールでName列に表示されます。</p>
+</aside>
+<p>「次のステップ：セキュリティグループの設定」をクリックします。</p>
+<h2 is-upgraded><strong>ステップ 6: セキュリティグループの設定</strong></h2>
+<p>インスタンスの通信を制御するためのルールをセキュリティグループで設定します。</p>
+<p>今回は新規に作成するため「新しいセキュリティグループを作成する」を選択していることを確認します。</p>
+<p>セキュリティグループ名および説明を以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>セキュリティグループ名</p>
+</td><td colspan="1" rowspan="1"><p>webserver</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>説明</p>
+</td><td colspan="1" rowspan="1"><p>Allow HTTP access</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 624.00px" src="img/6908b70cfe3e014d.png"></p>
+<aside class="special"><p>「説明」には任意の文字列を入力できます。セキュリティグループの概要が分かりやすいよう簡潔に記載しましょう。</p>
+</aside>
+<p>デフォルトではSSH接続を許可するルールのみが設定されています。今回は誰でもWordPressサーバにWebアクセス(HTTP接続)できようにするため、HTTP接続を許可するルールを作成します。</p>
+<p>「ルールの追加」をクリックします。</p>
+<p class="image-container"><img style="width: 198.50px" src="img/648b183091f99672.png"></p>
+<p>ルールを以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>タイプ</p>
+</td><td colspan="1" rowspan="1"><p>HTTP</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>プロトコル</p>
+</td><td colspan="1" rowspan="1"><p>TCP(タイプにHTTPを選ぶと自動で入力)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ポート範囲</p>
+</td><td colspan="1" rowspan="1"><p>80(タイプにHTTPを選ぶと自動で入力)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ソース</p>
+</td><td colspan="1" rowspan="1"><p>任意の場所</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>説明</p>
+</td><td colspan="1" rowspan="1"><p>(空欄のまま)</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 624.00px" src="img/d772cc5f2448fadc.png"></p>
+<p>正しく入力できたら「確認と作成」ボタンをクリックします。</p>
+<aside class="warning"><p>ルールの設定に誤りがあると後続のステップでWordPressに接続できなくなるため、内容に誤りがないか確認しましょう。特に「HTTP」と「HTTPS」が間違いやすいです。今回設定すべきルールは「HTTP」です。</p>
+</aside>
+<aside class="special"><p>ソースを「カスタム」とするとアクセスを許可するIPアドレスの範囲を限定することができます。送信元を絞り込みたい場合は設定しましょう。また特定のセキュリティグループが設定されているインスタンスからの通信のみを許可することも可能です。後のステップでデータベースインスタンス向けの設定ではこれを利用します。</p>
+</aside>
+<h2 is-upgraded><strong>ステップ7：インスタンス作成の確認</strong></h2>
+<p>設定内容の一覧が表示されます。問題なければ「起動」をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/6a3da45558c1b036.png"></p>
+<h3 is-upgraded><strong>キーペアの確認</strong></h3>
+<p>インスタンスへのSSH接続に使用するキーペアの設定ダイアログが表示されます。</p>
+<p>本ハンズオンではインスタンスへのSSHは行わないため「<strong>キーペアなしで続行</strong>」を選択します。</p>
+<p>「このAMIに組み込まれたパスワードがわからないと、このインスタンスに接続できないことを認識しています」にチェックを入れます。</p>
+<p>正しく選択できていることを確認し、「インスタンスの作成」をクリックします。</p>
+<p class="image-container"><img style="width: 412.50px" src="img/3ea22b29a55a1a4d.png"></p>
+<h3 is-upgraded><strong>インスタンスの作成</strong></h3>
+<p>以下のように「インスタンスは現在作成中」との画面が表示されます。</p>
+<p>「インスタンスの表示」をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/a9222a2cde89fbb7.png"></p>
+<p>EC2の管理画面に戻ります。作成したインスタンスの状態が「実行中」となっていれば完了です。</p>
+<p>インスタンス作成には30秒～1分ほど時間がかかる場合があるため、「保留中」となっている場合は実行中となるまで少し待ちましょう。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/fb660e09ebebcb91.png"></p>
+<h2 is-upgraded><strong>WordPressへのアクセス</strong></h2>
+<p>WordPressサーバが正常に起動しているか、実際にアクセスして確認してみましょう。</p>
+<p>作成したインスタンスを選択し、詳細情報を確認します。</p>
+<p>「パブリック IPv4 アドレス」のアドレスをコピーし、ブラウザの新しいタブを開いて貼り付けます。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/c426461a12bc782.png"></p>
+<aside class="warning"><p>アドレスの右側にある「オープンアドレス」をクリックするとHTTPSで開かれます。作成したWordPressサーバはHTTPS対応ができていないためHTTPSではアクセスできません。そのためHTTPでアクセスしてください。</p>
+</aside>
+<p>以下のようにWordPressの初期設定画面が表示されればOKです。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/989e2e442c3feef8.png"></p>
+<p>初期設定は後のステップで行いますので、表示ができたらタブを閉じてしまいましょう。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Amazon RDSの作成" duration="5">
+        <p>RDB(リレーショナルデータベース)のマネージドサービスである<a href="https://aws.amazon.com/jp/rds/" target="_blank">Amazon RDS</a>を使用して、WordPressで利用するデータベースを用意します。</p>
+<h2 is-upgraded><strong>事前準備(1) セキュリティグループの作成</strong></h2>
+<p>RDSインスタンスに割り当てるセキュリティグループを作成します。</p>
+<p>データベースはWordPressが起動するEC2インスタンスのみが利用するため、EC2インスタンスからの通信のみを許可するようにします。</p>
+<p>EC2コンソール左側のメニューバーより「ネットワーク&amp;セキュリティ」カテゴリにある<strong>セキュリティグループ</strong>をクリックします。</p>
+<p class="image-container"><img style="width: 409.50px" src="img/eff2560d99ee83f4.png"></p>
+<p>「セキュリティグループを作成」をクリックします。</p>
+<p class="image-container"><img style="width: 564.50px" src="img/4e79c37a594d31d6.png"></p>
+<p>「基本的な詳細」を以下のように入力します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>セキュリティグループ名</p>
+</td><td colspan="1" rowspan="1"><p>dbserver</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>説明</p>
+</td><td colspan="1" rowspan="1"><p>RDS for MySQL</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VPC</p>
+</td><td colspan="1" rowspan="1"><p>handson-vpc</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 432.50px" src="img/4c43e90b6b873a24.png"></p>
+<p>インバウンドルールの「ルールを追加」をクリックします。</p>
+<p class="image-container"><img style="width: 506.50px" src="img/fc05536dcb4551ea.png"></p>
+<p>インバウンドルールを以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>タイプ</p>
+</td><td colspan="1" rowspan="1"><p>MYSQL/Aurora</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>プロトコル</p>
+</td><td colspan="1" rowspan="1"><p>TCP(タイプを選ぶと自動で入力)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ポート範囲</p>
+</td><td colspan="1" rowspan="1"><p>3306(タイプを選ぶと自動で入力)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ソース</p>
+</td><td colspan="1" rowspan="1"><p>カスタム</p>
+<p>セキュリティグループ：webserver</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>説明 - オプション</p>
+</td><td colspan="1" rowspan="1"><p>(空欄のまま)</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 539.50px" src="img/fabf058494548169.png"></p>
+<aside class="special"><p>ソースにセキュリティグループを指定しました。これによりセキュリティグループ「webserver」が紐づけられているEC2インスタンス、すなわちWordPressサーバからのみTCP3306の通信を許可することができます。不要な通信をブロックできセキュリティリスクを低減できます。</p>
+</aside>
+<aside class="warning"><p>セキュリティグループを選択した後はリソースID(sg-xxxxxxxxx)の形式で表示されます。</p>
+</aside>
+<p>アウトバウンドルールおよびTagsはそのままとします。</p>
+<p>正しく設定できていることを確認し「セキュリティグループを作成」をクリックします。</p>
+<p class="image-container"><img style="width: 369.50px" src="img/47b58b99f18ed13a.png"></p>
+<p>無事にセキュリティグループ「dbserver」が作成されます。</p>
+<p>設定内容に問題がないか確認します。</p>
+<p class="image-container"><img style="width: 544.50px" src="img/29a6dc8c9d929382.png"></p>
+<h2 is-upgraded><strong>事前準備(2) サブネットグループの作成</strong></h2>
+<p>RDSコンソールにアクセスします。</p>
+<p>上部のメニューバーで「RDS」と入力し、サービスの項目にある「RDS」をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/f051c33b20215f7e.png"></p>
+<p>RDSコンソールが表示されます。</p>
+<p>左側のメニューバーより「サブネットグループ」をクリックし、画面右上の「DBサブネットグループを作成」をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/7c1a7bf67fdee661.png"></p>
+<p>「サブネットグループの詳細」を以下のように入力します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>名前</p>
+</td><td colspan="1" rowspan="1"><p>db-subnet</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>説明</p>
+</td><td colspan="1" rowspan="1"><p>RDS for MySQL</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VPC</p>
+</td><td colspan="1" rowspan="1"><p>handson-vpc</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 439.50px" src="img/906e8d8c006aa7ef.png"></p>
+<p>作成したサブネットグループに2つのサブネット「プライベートサブネット-1a」「プライベートサブネット-1c」を追加します。</p>
+<p>「アベイラビリティーゾーンを選択」のドロップダウンリストをクリックし「ap-northeast-1a」「ap-northeast-1c」の2つを選択します。</p>
+<p class="image-container"><img style="width: 481.50px" src="img/c6ec6777dd4e7967.png"></p>
+<p>「サブネットを選択」のドロップダウンリストをクリックします。</p>
+<p>アベイラビリティゾーンごとに選択可能なサブネットが表示されますが、プライベートサブネットとして作成したものを選択します。</p>
+<aside class="warning"><p>サブネット名が表示されないため分かりづらいのですが、IPアドレス範囲を見て判断しましょう。今回データベースのためのサブネットとして選択すべきものは10.0.2.0/24(プライベートサブネット-1a)と10.0.3.0/24(プライベートサブネット-1c)です。</p>
+</aside>
+<p class="image-container"><img style="width: 450.50px" src="img/22ef58be2d16b0f0.png"></p>
+<p>正しく設定できたら「作成」をクリックし、サブネットグループを作成します。</p>
+<p class="image-container"><img style="width: 475.50px" src="img/afe5a383a00e7d75.png"></p>
+<p>サブネットグループが作成されます。これで事前準備が終わりました！</p>
+<h2 is-upgraded><strong>RDSインスタンスの作成</strong></h2>
+<p>RDSコンソールの左側メニューバーより「データベース」を選択し「データベースの作成」をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/a8cda14ebfb47140.png"></p>
+<h3 is-upgraded>以下のような画面になります。</h3>
+<p class="image-container"><img style="width: 428.50px" src="img/ab3310cc884723d.png"></p>
+<aside class="warning"><p>上記と表示が異なる場合は従来のインターフェースを選択している可能性があります。どちらでもハンズオンは可能ですが、常に進化するクラウドに追従していくため、新しいインターフェースで実施しましょう。</p>
+<p>従来のインターフェースが表示されている場合は画面上部の「Switch to the new database creation flow.」をクリックし、新しいインターフェースに切り替えます。</p>
+</aside>
+<p class="image-container"><img style="width: 417.50px" src="img/d336d044e564e179.png"></p>
+<h3 is-upgraded><strong>データベース作成方法</strong></h3>
+<p>デフォルトの「標準作成」のままとします。</p>
+<h3 is-upgraded>エンジンのオプション</h3>
+<p>今回はMySQLを利用するためエンジンのタイプで「MySQL」を選択します。</p>
+<p>バージョンはデフォルトのままとします。</p>
+<p class="image-container"><img style="width: 442.34px" src="img/96f60bdc4e7c800b.png"></p>
+<h3 is-upgraded><strong>テンプレート</strong></h3>
+<p>「無料利用枠」を選択します。</p>
+<h3 is-upgraded><strong>設定</strong></h3>
+<p>以下のように入力します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>DB インスタンス識別子</p>
+</td><td colspan="1" rowspan="1"><p>wp-db</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>マスターユーザー名</p>
+</td><td colspan="1" rowspan="1"><p>admin</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>マスターパスワード</p>
+</td><td colspan="1" rowspan="1"><p>password</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 392.24px" src="img/bfe51084e7383cc9.png"></p>
+<aside class="warning"><p>今回はハンズオンのためマスターパスワードを「password」としていますが、本番環境では十分に複雑なパスワードを設定します。本ハンズオンで任意の文字列とすることも可能ですが、その場合は後のステップで使用するため必ずメモに残してください。</p>
+</aside>
+<h3 is-upgraded><strong>DBインスタンスサイズ</strong></h3>
+<p>デフォルト(db.t2.micro)のまま進みます。</p>
+<h3 is-upgraded><strong>ストレージ</strong></h3>
+<p>デフォルトのまま進みます。</p>
+<h3 is-upgraded><strong>可用性と耐久性</strong></h3>
+<p>今回は無料枠が適用されるシングルAZ配置とするため、マルチAZ配置は選択しません。</p>
+<h3 is-upgraded><strong>接続</strong></h3>
+<p>以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Virtual Private Cloud (VPC)</p>
+</td><td colspan="1" rowspan="1"><p>handson-vpc</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>サブネットグループ</p>
+</td><td colspan="1" rowspan="1"><p>db-subnet</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>パブリックアクセス可能</p>
+</td><td colspan="1" rowspan="1"><p>なし</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VPCセキュリティグループ</p>
+</td><td colspan="1" rowspan="1"><p>既存の選択</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>既存のVPCセキュリティグループ</p>
+</td><td colspan="1" rowspan="1"><p>dbserver</p>
+<p>(defaultが選択されている場合は解除します。)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>アベイラビリティゾーン</p>
+</td><td colspan="1" rowspan="1"><p>ap-northeast-1a</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 624.00px" src="img/465313d22bf9af41.png"></p>
+<h3 is-upgraded><strong>データベース認証</strong></h3>
+<p>デフォルトのまま進みます。</p>
+<h3 is-upgraded><strong>追加設定</strong></h3>
+<p>最初のデータベース名をwordpressとします。</p>
+<p>「自動バックアップの有効化」のチェックを外します。</p>
+<p class="image-container"><img style="width: 397.50px" src="img/c43e6ebe995ec7fd.png"></p>
+<aside class="warning"><p>今回はハンズオンのため自動バックアップを無効化しますが、本番環境の場合は有効化しましょう。モニタリングやログの設定も適切に行います。</p>
+</aside>
+<p>その他の設定はデフォルトのままとします。</p>
+<p>設定ができたら「データベースの作成」をクリックします。</p>
+<p>データベースの作成が開始されます。作成には3~5分程度かかるため少し待ちましょう</p>
+<p class="image-container"><img style="width: 475.50px" src="img/80df6e3f19f30fd6.png"></p>
+<p>「利用可能」と表示されたらRDSインスタンスの作成は完了です！</p>
+<aside class="special"><p>オンプレミスの環境でデータベースを構築した経験がある方であれば「こんなに簡単に作成できるのか」と驚かれるのではないでしょうか。自前でやると数時間かかる作業も数分で完了できてしまうのはマネージドサービスの大きなメリットです。</p>
+</aside>
+<h3 is-upgraded><strong>エンドポイントの確認</strong></h3>
+<p>後のステップでMySQLへの接続情報として用いるエンドポイントを確認します。</p>
+<p>作成したDBインスタンス「wp-db」をクリックします。</p>
+<p class="image-container"><img style="width: 324.50px" src="img/3923d1e861e7220d.png"></p>
+<p>「接続とセキュリティ」タブにある「エンドポイント」の値をコピーしてメモしておきます。</p>
+<p class="image-container"><img style="width: 346.50px" src="img/c1168370916a09ef.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="WordPressの初期設定" duration="5">
+        <p>データベースの準備ができましたので、WordPressの初期設定を行いましょう。</p>
+<h2 is-upgraded><strong>WordPress管理画面へのアクセス</strong></h2>
+<p>画面上部の検索バーに「EC2」と入力し、EC2の管理画面に遷移します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/799cb602dfe78381.png"></p>
+<p>リソース内のメニューにある「実行中のインスタンス」をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/39b453d9669385a2.png"></p>
+<p>「webserver#1」を選択し、パブリックIpv4アドレスをコピーし、ブラウザの新しいタブを開いて貼り付けます。</p>
+<p class="image-container"><img style="width: 500.50px" src="img/c426461a12bc782.png"></p>
+<p>WordPressの初期設定画面が表示されます。</p>
+<p>「さあ、始めましょう！」をクリックして設定に進みましょう。</p>
+<p class="image-container"><img style="width: 469.50px" src="img/1e19882202cbbaf0.png"></p>
+<h2 is-upgraded><strong>データベース接続の設定</strong></h2>
+<p>以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>データベース名</p>
+</td><td colspan="1" rowspan="1"><p>wordpress</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ユーザー名</p>
+</td><td colspan="1" rowspan="1"><p>admin</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>パスワード</p>
+</td><td colspan="1" rowspan="1"><p>password</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>データベースのホスト</p>
+</td><td colspan="1" rowspan="1"><p>(RDSインスタンスのエンドポイント)</p>
+<p>例：wp-db.cgmlxlpevsr4.ap-northeast-1.rds.amazonaws.com</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>テーブル接頭辞</p>
+</td><td colspan="1" rowspan="1"><p>wp_</p>
+</td></tr>
+</table>
+<aside class="special"><p>「データベースのホスト」は前のステップでメモに残したRDSインスタンスのエンドポイントをコピーして貼り付けます。</p>
+</aside>
+<aside class="warning"><p>RDSインスタンスに接続するため情報ですので、RDSインスタンスの設定と一致している必要がありま。データベース名、ユーザー名、パスワードを上記と異なる値にしている場合は、ご自身で設定した内容を入力してください。</p>
+</aside>
+<p>必要な設定を入力したら「送信」ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 429.50px" src="img/66ad5d43db93c10.png"></p>
+<p>「この部分のインストールは無事完了しました。」と表示されればデータベースの接続は成功です。</p>
+<p>「インストール実行」をクリックします。</p>
+<p class="image-container"><img style="width: 465.90px" src="img/9287272a36465d86.png"></p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>サイトのタイトル</p>
+</td><td colspan="1" rowspan="1"><p>お好きなタイトルをつけてください！</p>
+<p>(例：はじめてのAWS)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ユーザー名</p>
+</td><td colspan="1" rowspan="1"><p>admin</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>パスワード</p>
+</td><td colspan="1" rowspan="1"><p>(自動生成)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>メールアドレス</p>
+</td><td colspan="1" rowspan="1"><p>ご自身のメールアドレス</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>検索エンジンでの表示</p>
+</td><td colspan="1" rowspan="1"><p>「検索エンジンがサイトをインデックスしないようにする」にチェック</p>
+</td></tr>
+</table>
+<p>ここで設定するパスワードは次のログインで入力しますので、コピーして手元のメモに残してください。</p>
+<p>入力できたら「WordPressをインストール」をクリックします。</p>
+<p class="image-container"><img style="width: 500.50px" src="img/1e4974d03ec21e69.png"></p>
+<aside class="warning"><p>ここでのユーザー名/パスワードはデータベースではなくWordPress管理アカウントのものです。パスワードが分からなくなるとWordPress管理画面にログインできなくなるため、必ずメモしておきましょう。</p>
+</aside>
+<p>以下の画面が表示されればWordPressの初期設定が完了です。</p>
+<p>「ログイン」をクリックします。</p>
+<p class="image-container"><img style="width: 439.50px" src="img/381ddac9480e1e94.png"></p>
+<p>ユーザー名に「admin」、パスワードにメモした内容を入力し「ログイン」をクリックします。</p>
+<p class="image-container"><img style="width: 226.50px" src="img/8ab4b073cb3377a3.png"></p>
+<p>WordPress管理画面にログインできました。</p>
+<p>画面左上のサイト名にマウスオーバーし、「サイトを表示」をクリックしましょう。</p>
+<p class="image-container"><img style="width: 483.50px" src="img/3238e429553ae10f.png"></p>
+<p>WordPressサイトのトップページが表示されます！</p>
+<p class="image-container"><img style="width: 508.50px" src="img/da438101451ef794.png"></p>
+<p>WordPressによる簡単なブログサイトですが、AWS上に構築することができました！</p>
+<p>現状はWebサーバとして1つのEC2インスタンス、DBサーバーとして1つのRDSインスタンスを使用しています。</p>
+<p>オプションのステップではこれらの冗長化を行います。(DBの冗長化は参考情報の掲載のみ)</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="オプション1：ELBの作成" duration="5">
+        <p>複数のWebサーバを稼働する場合、それぞれのWebサーバにリクエストを振り分けるロードバランサーが必要です。</p>
+<p>Webアクセスを受付け、複数のEC2インスタンスへ負荷分散させるロードバランサーとして<a href="https://aws.amazon.com/jp/elasticloadbalancing/?elb-whats-new.sort-by=item.additionalFields.postDateTime&elb-whats-new.sort-order=desc" target="_blank">ELB(Elastic Load Balancing)</a>を作成します。ELBやターゲットグループの作成方法について学びます。</p>
+<h2 is-upgraded><strong>ELB作成画面への遷移</strong></h2>
+<p>ELBの設定はEC2コンソールから行います。</p>
+<p>画面上部の検索バーに「EC2」と入力し、EC2コンソールへ遷移します。</p>
+<p class="image-container"><img style="width: 460.50px" src="img/8992d69db2caaf2.png"></p>
+<p>左側のメニューバーより「ロードバランサー」を選択し、「ロードバランサーの作成」をクリックします。</p>
+<p class="image-container"><img style="width: 357.84px" src="img/5c4c5ff5060d948d.png"></p>
+<h2 is-upgraded><strong>ロードバランサーの種類の選択</strong></h2>
+<p>3種類のロードバランサーが選択できます。今回はWebアプリケーションに最適な<strong>Application Load Balancer(ALB)</strong>を選択します。</p>
+<p class="image-container"><img style="width: 545.50px" src="img/5b0fe1d284511d50.png"></p>
+<h2 is-upgraded><strong>手順1：ロードバランサーの設定</strong></h2>
+<p>以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>名前</p>
+</td><td colspan="1" rowspan="1"><p>elb</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>スキーム</p>
+</td><td colspan="1" rowspan="1"><p>インターネット向け</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>IPアドレスタイプ</p>
+</td><td colspan="1" rowspan="1"><p>ipv4</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>リスナー</p>
+</td><td colspan="1" rowspan="1"><p>(デフォルトのまま)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VPC</p>
+</td><td colspan="1" rowspan="1"><p>handson-vpc</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>アベイラビリティーゾーンと</p>
+<p>サブネット</p>
+</td><td colspan="1" rowspan="1"><p>ap-northeast-1aにチェック</p>
+<p>(サブネット：パブリックサブネット-1a)</p>
+<p>ap-northeast-1cにチェック</p>
+<p>(サブネット：パブリックサブネット-1c)</p>
+</td></tr>
+</table>
+<p>アドオンサービスはそのままとし「次の手順：セキュリティ設定の構成」をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/5d8d2a61bba261eb.png"></p>
+<h2 is-upgraded><strong>手順2：セキュリティ設定の構成</strong></h2>
+<p>「HTTPSではなくHTTPを使っています。」という内容の警告が表示されます。今回はハンズオンのためこのまま次に進みます。</p>
+<p>「次の手順：セキュリティグループの設定」をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/6bb6fd408c44f96.png"></p>
+<h2 is-upgraded><strong>手順3：セキュリティグループの設定</strong></h2>
+<p>ロードバランサ用に新しいセキュリティグループを作成します。</p>
+<p>「新しいセキュリティグループを作成する」を選択します。</p>
+<p>以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>セキュリティグループ名</p>
+</td><td colspan="1" rowspan="1"><p>elb</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>説明</p>
+</td><td colspan="1" rowspan="1"><p>Allow HTTP access</p>
+</td></tr>
+</table>
+<p>デフォルトですべてのIPからTCP80(HTTP)を許可するルールが設定されているため、このまま「次の手順：ルーティングの設定」をクリックします。</p>
+<p class="image-container"><img style="width: 497.50px" src="img/bbf57a6585ea5972.png"></p>
+<h3 is-upgraded><strong>手順4：ルーティングの設定</strong></h3>
+<h3 is-upgraded><strong>ターゲットグループ</strong></h3>
+<p>以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>ターゲットグループ</p>
+</td><td colspan="1" rowspan="1"><p>新しいターゲットグループ</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>名前</p>
+</td><td colspan="1" rowspan="1"><p>webserver</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ターゲットの種類</p>
+</td><td colspan="1" rowspan="1"><p>インスタンス</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ポート</p>
+</td><td colspan="1" rowspan="1"><p>80</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>プロトコルバージョン</p>
+</td><td colspan="1" rowspan="1"><p>HTTP1</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 389.50px" src="img/c1e25bfb94005352.png"></p>
+<aside class="special"><p>ターゲットグループはロードバランサが受け付けたトラフィックを送信する先となるバックエンドです。後のステップでターゲットグループにEC2インスタンスを追加し、WordPressにトラフィックをルーティングできるようにします。</p>
+</aside>
+<h3 is-upgraded><strong>ヘルスチェック</strong></h3>
+<p>以下のように設定し、「次の手順：ターゲットの登録」をクリックします。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>プロトコル</p>
+</td><td colspan="1" rowspan="1"><p>HTTP</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>パス</p>
+</td><td colspan="1" rowspan="1"><p>/wp-includes/images/blank.gif</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 582.50px" src="img/1845b52b71e420cd.png"></p>
+<aside class="special"><p>ヘルスチェックはターゲットグループに登録されたバックエンドの正常性を確認し、NGとなった場合はそのバックエンドに対してトラフィックのルーティングを停止します。デフォルトではヘルスチェックに対し「200」のステータスコードを返した場合は成功(OK)、それ以外のステータスコードの場合は失敗(NG)とみなします。</p>
+</aside>
+<aside class="warning"><p>パスの値に誤りがあるとヘルスチェックが失敗し、WordPressサーバにアクセスできないためご注意ください。手入力でも構いませんがタイプミスを防ぐためコピー&amp;ペーストされることをオススメします。</p>
+</aside>
+<h2 is-upgraded><strong>手順5：ターゲットの登録</strong></h2>
+<p>ターゲットにインスタンスを登録します。これによりELBがトラフィックをインスタンスにルーティングできるようになります。</p>
+<p>画面下部のインスタンス選択よりwebserver#1を選択し「登録済みに追加」をクリックします。</p>
+<p>すると登録済みターゲットにwebserver#1が追加されます。</p>
+<p>「次の手順：確認」をクリックします。</p>
+<p class="image-container"><img style="width: 600.50px" src="img/2a57ce2e52fb5c76.png"></p>
+<h2 is-upgraded><strong>手順6：確認</strong></h2>
+<p>設定内容を確認し、問題なければ「作成」をクリックします。</p>
+<p class="image-container"><img style="width: 581.50px" src="img/3cdfc413392f9a5e.png"></p>
+<p>以下の画面が表示されたら、「閉じる」をクリックします。</p>
+<p class="image-container"><img style="width: 547.50px" src="img/6dfb4a09f5b6d1e7.png"></p>
+<p>ロードバランサー「elb」が作成されています。状態がprovisioningとなっている場合は少し間を置いて更新しましょう。activeとなったらロードバランサーの完了です。</p>
+<p class="image-container"><img style="width: 438.50px" src="img/9dab6059892b1b.png"></p>
+<h2 is-upgraded><strong>作成されたロードバランサーの確認</strong></h2>
+<p>「リスナー」タブを選択します。</p>
+<p>リスナー「HTTP:80」が存在し、デフォルトルールに転送先「webserver」が設定されています。</p>
+<aside class="special"><p>このロードバランサがTCP80でリクエストを受け付け、それをターゲットグループwebserverに転送することを意味します。</p>
+</aside>
+<p>転送先に設定されているwebserverをクリックします。</p>
+<p class="image-container"><img style="width: 563.50px" src="img/4db5f19100d288c6.png"></p>
+<p>ターゲットグループ「webserver」の情報が表示されます。</p>
+<p>「Targets」タブをクリックします。</p>
+<p class="image-container"><img style="width: 584.50px" src="img/f5286194086f1f84.png"></p>
+<p>ターゲットにEC2インスタンス「webserver#1」が登録されていることを確認します。ステータスが「Healthy」であれば、リクエストを受け付けていることを意味します。</p>
+<aside class="warning"><p>ステータスがUnhealthyとなっている場合はヘルスチェックのパスが正しく設定されているかなどを確認してください。</p>
+</aside>
+<h2 is-upgraded><strong>ELBを経由したWordPressサイトへのアクセス</strong></h2>
+<p>左側メニューの「ロードバランサー」をクリックしてロードバランサーのメニュニー戻ります。</p>
+<p>「elb」を選択し、詳細タブからDNS名を確認・コピーします。</p>
+<p class="image-container"><img style="width: 526.50px" src="img/9fcd36f9e3eda858.png"></p>
+<p>WordPressのブログサイトが表示されます。</p>
+<p class="image-container"><img style="width: 535.50px" src="img/f4db60ab2bcaa720.png"></p>
+<p>EC2インスタンスにアクセスした際と同じような画面になっています。</p>
+<p>しかし、今回はロードバランサー(ELB)がフロントエンドとしてHTTPリクエストを受け付け、バックエンドのEC2インスタンスに転送しています。</p>
+<p>これによりバックエンドのサーバが複数台にスケールしてもトラフィックを負荷分散することができます。次のオプションではEC2インスタンスを新しく1台追加します。</p>
+<aside class="special"><p>ELBのは負荷分散の他にも、SSL終端を行えるなどのメリットもあります。ロードバランサーを自前で構築せず簡単に利用できるため、ユーザーは自社のアプリケーション開発に集中できます。</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="オプション2：AMIの作成と作成したAMIから2つめのEC2インスタンスの起動" duration="5">
+        
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="オプション3：Webシステム全体の可用性の確認" duration="5">
+        
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="まとめ" duration="5">
+        <p>お疲れ様でした！ハンズオンは以上になります。</p>
+<p>このハンズオンでは以下のことを学びました。</p>
+<aside class="special"><ul>
+<li>VPCとサブネットについて理解する</li>
+<li>EC2インスタンスの基本操作を身につける</li>
+<li>RDSを使用してデータベースを作成する</li>
+<li>ELBを使用した負荷分散の方法を理解する</li>
+</ul>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="リソースの削除" duration="5">
+        
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="参考1：EC2 Instance Connect" duration="5">
+        
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="参考2：RDSのマルチAZ配置" duration="5">
+        
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
