@@ -28,7 +28,7 @@
                   feedback-link="">
     
       <google-codelab-step label="イントロダクション" duration="1">
-        <p>このハンズオンでは<a href="https://pages.awscloud.com/event_JAPAN_Hands-on-for-Beginners-Scalable_LP.html?trk=aws_introduction_page" target="_blank">AWS Hands-on for Beginners 〜 スケーラブルウェブサイト構築編 〜</a>をベースに、WordPressを使ったブログサイトの構築を通じて、スケーラブルな Web システム構築方法を学びます。主に取り扱う AWS サービスはAmazon  VPC、Amazon EC2、Amazon RDS、ELB の4つです。</p>
+        <p>このハンズオンでは<a href="https://pages.awscloud.com/event_JAPAN_Hands-on-for-Beginners-Scalable_LP.html?trk=aws_introduction_page" target="_blank">AWS Hands-on for Beginners 〜 スケーラブルウェブサイト構築編 〜</a>をベースに、WordPressを使ったブログサイトの構築を通じて、スケーラブルな Web システム構築方法を学びます。主に取り扱う AWS サービスは<a href="https://aws.amazon.com/jp/vpc/" target="_blank">Amazon  VPC</a>、<a href="https://aws.amazon.com/jp/ec2/" target="_blank">Amazon EC2</a>、<a href="https://aws.amazon.com/jp/rds/" target="_blank">Amazon RDS</a>、<a href="https://aws.amazon.com/jp/elasticloadbalancing/" target="_blank">ELB</a> の4つです。</p>
 <h2 is-upgraded><strong>目標</strong></h2>
 <ul>
 <li>AWSの基本サービス(VPC、EC2、RDS、ELB)の概念を理解し基本的な操作を身につける</li>
@@ -40,7 +40,7 @@
 <p class="image-container"><img style="width: 624.00px" src="img/c1420ab3f3c57b56.png"></p>
 <p>Webサーバ-データベースの2層アーキテクチャを題材にAWSでスケーラブルなWebサイトを構築する方法を学びます。</p>
 <p>Webサーバ層としてWordPressをセットアップしたEC2インスタンスを使用します。データベース層にはAmazon RDS(MySQL)を使用します。</p>
-<p>Webサーバ層のEC2インスタンスは2台構成として冗長化し、ELBを用いて負荷分散を行います。</p>
+<p>オプションのステップではWebサーバ層のEC2インスタンスを2台構成として冗長化し、ELBを用いて負荷分散を行います。</p>
 <aside class="warning"><p>データベース層も冗長化が可能ですが、無料枠の範囲を越えてしまうため、当ハンズオンでは実施しません。</p>
 </aside>
 <h3 is-upgraded><strong>ハンズオンの流れ</strong></h3>
@@ -48,8 +48,8 @@
 <li>VPCとサブネットを作成します</li>
 <li>WordPressがインストールされたWebサーバ(EC2インスタンス)を作成します</li>
 <li>データベースとしてRDSインスタンス(MySQL)を作成します</li>
-<li>ロードバランサー(ALB)を作成し、EC2インスタンスを配下に登録します</li>
 <li>WordPressの初期設定を行い、ブログが表示できることを確認します</li>
+<li>ロードバランサー(ALB)を作成し、EC2インスタンスを配下に登録します</li>
 <li>WordPress設定済みのAMIを作成します</li>
 <li>AMIから2つめのWebサーバ(EC2インスタンス)を作成します</li>
 <li>2つめのEC2インスタンスをELB配下に登録し、Webトラフィックの負荷分散を行います</li>
@@ -82,7 +82,8 @@
       </google-codelab-step>
     
       <google-codelab-step label="Amazon VPCの作成" duration="5">
-        <p>上部の検索バーで「VPC」と入力し、サービス欄のVPCをクリックします。</p>
+        <p>このステップでは1つのパブリックサブネットを含むVPCを作成します。</p>
+<p>上部の検索バーで「VPC」と入力し、サービス欄のVPCをクリックします。</p>
 <p class="image-container"><img style="width: 624.00px" src="img/acfbb167eaa30eb.png"></p>
 <p>VPCのサービス画面に遷移します。</p>
 <p>AWSアカウント作成時にデフォルトのVPCが既に1つ作成されていますが、本ハンズオンでは新規にVPCを作成します。</p>
@@ -769,12 +770,139 @@ systemctl start httpd.service</code></pre>
       </google-codelab-step>
     
       <google-codelab-step label="オプション2：AMIの作成と作成したAMIから2つめのEC2インスタンスの起動" duration="5">
-        
+        <p>3つのステップによりWordPressサーバの冗長化と負荷分散を行います。</p>
+<ol type="1" start="1">
+<li>webserver#1をベースにAMI(イメージ)を作成</li>
+<li>AMIから新しいEC2インスタンスを作成</li>
+<li>作成したEC2インスタンスをELBに紐付け</li>
+</ol>
+<h2 is-upgraded><strong>AMI(イメージ)の作成</strong></h2>
+<p>EC2コンソールを開き、左側のメニューから「インスタンス」を選択します。</p>
+<p>webserver#1を選択し「アクション」＞「イメージとテンプレート」＞「イメージを作成」をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/afff201befec9275.png"></p>
+<p>以下のように入力します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>イメージ名</p>
+</td><td colspan="1" rowspan="1"><p>wordpress-server</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>イメージの説明</p>
+</td><td colspan="1" rowspan="1"><p>(空欄のまま)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>再起動しない</p>
+</td><td colspan="1" rowspan="1"><p>(有効化にチェックなしのまま)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ボリューム</p>
+</td><td colspan="1" rowspan="1"><p>(デフォルトのまま)</p>
+</td></tr>
+</table>
+<p>入力できたら「イメージを作成」をクリックします。</p>
+<p class="image-container"><img style="width: 530.50px" src="img/1fa5ba885b0a7f27.png"></p>
+<p>上部にAMI作成についてのメッセージが表示されます。</p>
+<p>イメージID(ami-xxxxxxxx)をクリックして詳細を確認しましょう。</p>
+<p class="image-container"><img style="width: 440.50px" src="img/fef7168a7aa1eb2e.png"></p>
+<p>作成したAMI(wordpress-server)が表示されます。ステータスがpendingの場合はavailableになるまで待ちましょう。3分程度かかる場合があります。</p>
+<h2 is-upgraded>AMIから新しいEC2インスタンスを作成</h2>
+<p>availableになったAMIを選択し。「アクション」＞「起動」とクリックします。</p>
+<p class="image-container"><img style="width: 507.50px" src="img/acff1d81b8db7ac9.png"></p>
+<h3 is-upgraded>ステップ2：インスタンスタイプの選択</h3>
+<p>1台目のEC2インスタンスと同様に設定を入力していきます。</p>
+<p>インスタンスタイプに「t2.micro」を選択し、「次のステップ：インスタンスの詳細の設定」をクリックします。</p>
+<p class="image-container"><img style="width: 545.50px" src="img/16e6558c4d8a1b1e.png"></p>
+<h3 is-upgraded>ステップ 3: インスタンスの詳細の設定</h3>
+<p>「ネットワーク」「サブネット」「自動割り当てパブリックIP」を以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>ネットワーク</p>
+</td><td colspan="1" rowspan="1"><p>handson-vpc</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>サブネット</p>
+</td><td colspan="1" rowspan="1"><p>パブリックサブネット-1c</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>自動割り当てパブリックIP</p>
+</td><td colspan="1" rowspan="1"><p>有効</p>
+</td></tr>
+</table>
+<aside class="warning"><p>サブネットに「パブリックサブネット-1c」を選択することにご注意ください。1台目と異なるアベイラビリティゾーンに作成することで、AZ障害への耐久性を持たせます。</p>
+</aside>
+<p class="image-container"><img style="width: 591.50px" src="img/46e11a0f9426eb42.png"></p>
+<aside class="special"><p>1台目のEC2インスタンスではユーザーデータにWordPressをセットアップするためのスクリプトを入力しました。今回はAMIに既にWordPressが含まれていますので、新たにセットアップする必要はありません。よってユーザーデータは空欄のままで構いません。</p>
+</aside>
+<p>「次のステップ：ストレージの追加」をクリックします。</p>
+<h3 is-upgraded>ステップ 4: ストレージの追加</h3>
+<p>ストレージはデフォルトの設定のままとし、「次のステップ：タグの追加」をクリックします。</p>
+<h3 is-upgraded><strong>ステップ 5: タグの追加</strong></h3>
+<p>2台目のEC2インスタンスになるため、「タグの追加」をクリックし、以下のように設定します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>キー</p>
+</td><td colspan="1" rowspan="1"><p>Name</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>値</p>
+</td><td colspan="1" rowspan="1"><p>webserver#2</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 616.50px" src="img/390c93b0ce485d67.png"></p>
+<p>「次のステップ：セキュリティグループの設定」をクリックします。</p>
+<h3 is-upgraded>ステップ 6: セキュリティグループの設定</h3>
+<p>同じWordPressサーバとなるため、1台目と同じセキュリティグループを割り当てましょう。</p>
+<p>「既存のセキュリティグループを選択する」にチェックします。</p>
+<p>セキュリティグループ「webserver」を選択し「確認と作成」をクリックします。</p>
+<p class="image-container"><img style="width: 560.50px" src="img/a27d39b37f02aa17.png"></p>
+<h3 is-upgraded><strong>ステップ 7: インスタンス作成の確認</strong></h3>
+<p>設定内容の一覧が表示されます。問題なければ「起動」をクリックします。</p>
+<p class="image-container"><img style="width: 597.50px" src="img/d5a36445ef99acca.png"></p>
+<h3 is-upgraded><strong>キーペアの確認</strong></h3>
+<p>1台目と同様「キーペアなしで続行」を選択します。</p>
+<p>「このAMIに組み込まれたパスワードがわからないと、このインスタンスに接続できないことを認識しています」にチェックを入れます。</p>
+<p>正しく選択できていることを確認し、「インスタンスの作成」をクリックします。</p>
+<p class="image-container"><img style="width: 412.50px" src="img/3ea22b29a55a1a4d.png"></p>
+<p>以下のように「インスタンスは現在作成中」との画面が表示されます。</p>
+<p>「インスタンスの表示」をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/a9222a2cde89fbb7.png"></p>
+<p>EC2の管理画面に戻ります。webserver#2の状態が「実行中」となっていれば完了です。</p>
+<p>インスタンス作成には30秒～1分ほど時間がかかる場合があるため、「保留中」となっている場合は実行中となるまで少し待ちましょう。</p>
+<p class="image-container"><img style="width: 482.50px" src="img/8df248e056c2f80a.png"></p>
+<h2 is-upgraded><strong>作成したEC2インスタンスをELBに紐付け</strong></h2>
+<p>ELBへの紐付けはロードバランサではなくターゲットグループに行います。</p>
+<p>EC2コンソールの左側メニューから「ターゲットグループ」を選択し「webserver」をクリックします。</p>
+<p class="image-container"><img style="width: 487.69px" src="img/95aaa45c4e6f801f.png"></p>
+<h3 is-upgraded><strong>ターゲットグループへ登録</strong></h3>
+<p>Targets」タブを選択し「Register targets」をクリックします。</p>
+<p class="image-container"><img style="width: 557.50px" src="img/4ea637186766b6c8.png"></p>
+<p>Available instancesのメニューにて「「webserver2」を選択し「include as pending below」をクリックします。</p>
+<p class="image-container"><img style="width: 558.50px" src="img/b46df266bc203850.png"></p>
+<p>Targetsの項目にwebserver#2がpending targetとして追加されたことを確認し、「Register pending targets」をクリックします。</p>
+<p class="image-container"><img style="width: 582.50px" src="img/7775617b017ed39d.png"></p>
+<p>webserver#2がターゲットグループに登録されました！</p>
+<p>Statusが「Initial」の場合は「healthy」となるまで少し待ちましょう。</p>
+<aside class="special"><p>ターゲットグループに設定されたヘルスチェックに合格することでhealthyになります。</p>
+</aside>
+<p class="image-container"><img style="width: 542.50px" src="img/c9ea049c6658f08f.png"></p>
+<p>これでWordPressサーバが2台の冗長構成となり、負荷分散が行われるようになりました！</p>
+<p>念のためELBのDNS名からアクセスし、WordPressサイトが表示されることを確認しましょう。</p>
+<p>左側メニューの「ロードバランサー」をクリックしてロードバランサーのメニュニー戻ります。</p>
+<p>「elb」を選択し、詳細タブからDNS名を確認・コピーします。</p>
+<p class="image-container"><img style="width: 526.50px" src="img/9fcd36f9e3eda858.png"></p>
+<p>WordPressのブログサイトが表示されます。</p>
+<p class="image-container"><img style="width: 535.50px" src="img/f4db60ab2bcaa720.png"></p>
+
 
       </google-codelab-step>
     
-      <google-codelab-step label="オプション3：Webシステム全体の可用性の確認" duration="5">
-        
+      <google-codelab-step label="オプション3：Webサーバの可用性の確認" duration="5">
+        <p>2台のEC2インスタンスのうち1台を停止させ、その状態でもWordPressサイトにアクセスできることを確認します。</p>
+<p>EC2コンソール左側メニューの「インスタンス」を選択します。</p>
+<p>どちらのインスタンスでも構いませんが、今回は1台目のインスタンスを停止してみましょう。</p>
+<p class="image-container"><img style="width: 537.50px" src="img/34a9a857d55dac17.png"></p>
+<p>確認のダイアログが表示されるため「停止」ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 523.50px" src="img/500b421a797fa9ab.png"></p>
+<p>インスタンス管理画面に戻りwebserber#1が停止されていることを確認します。</p>
+<p class="image-container"><img style="width: 502.50px" src="img/dabc92b951a89ca6.png"></p>
+<p>この状況でもWordPressサイトが表示されるか確認しましょう。</p>
+<p>前のステップと同様ELBのDNS名にブラウザタブでアクセスします。</p>
+<p class="image-container"><img style="width: 535.50px" src="img/f4db60ab2bcaa720.png"></p>
+<p>WordPressサイトが表示されました！</p>
+<aside class="special"><p>2台構成への冗長化したことで、1台に障害が発生してもサービスを継続できるようになりました。2台のインスタンスは別々のアベイラビリティーゾーンに配置していますので、アベイラビリティゾーン障害の際もサービスを継続できます。このように障害発生を前提としたシステム設計をDesign for Failerと呼びます。</p>
+</aside>
+
 
       </google-codelab-step>
     
@@ -793,17 +921,74 @@ systemctl start httpd.service</code></pre>
       </google-codelab-step>
     
       <google-codelab-step label="リソースの削除" duration="5">
-        
+        <p>不要な課金を避けるため、作成した環境を継続して使用しない場合は削除しましょう。</p>
+<h2 is-upgraded><strong>RDS DBインスタンス</strong></h2>
+<p>RDSコンソールよりDBインスタンスの削除を行います。</p>
+<p class="image-container"><img style="width: 567.50px" src="img/414aa53006f578d3.png"></p>
+<p>削除確認のダイアログが表示されます。</p>
+<p>「最終スナップショットを作成しますか？」のチェックを外します。</p>
+<p>「インスタンスの削除後、システムスナップショットとポイントインタイムの復元を含む自動バックアップが利用不可となることを了承しました。」にチェックを入れます。</p>
+<p>delete meとメッセージを入力し「削除」をクリックします。</p>
+<p class="image-container"><img style="width: 429.50px" src="img/ac516560a35a651e.png"></p>
+<aside class="warning"><p>DBインスタンスの削除には数分かかる場合があります。</p>
+</aside>
+<p>DBインスタンスの削除が完了したら、次にサブネットグループを削除します。</p>
+<p class="image-container"><img style="width: 564.50px" src="img/bc940cdcb25cda19.png"></p>
+<h2 is-upgraded><strong>EC2インスタンス</strong></h2>
+<p>EC2コンソールにアクセスし、インスタンス管理メニューを開きます。</p>
+<p>2台のインスタンスを選択し「インスタンスの状態」＞「インスタンスを終了」をクリックします。</p>
+<p class="image-container"><img style="width: 592.50px" src="img/5fbfdfffac50038.png"></p>
+<aside class="warning"><p>インスタンスの状態が同じもののみ一括で操作することができます。2つのインスタンスの状態が異なる場合は1つずつ削除してください。</p>
+</aside>
+<p>終了の確認ダイアログが表示されるので、「終了」をクリックします。</p>
+<p class="image-container"><img style="width: 473.50px" src="img/2e19e1fdc2901700.png"></p>
+<p>以上でEC2インスタンスの削除は完了です。</p>
+<h2 is-upgraded><strong>AMI</strong></h2>
+<p>作成したAMIを選択し「アクション」＞「登録解除」をクリックします。</p>
+<p class="image-container"><img style="width: 476.50px" src="img/5ef4c9d131e76cb7.png"></p>
+<p>登録解除の確認ダイアログが表示されるので「次へ」をクリックします。</p>
+<p class="image-container"><img style="width: 493.50px" src="img/a0627d4b08e7a22d.png"></p>
+<p>以上でAMIの削除は完了です。</p>
+<h2 is-upgraded><strong>EBSスナップショット</strong></h2>
+<p>AMIを作成する過程で内部的にスナップショットが作成されているため、こちらも削除します。</p>
+<p>Elastic Block Storeの「スナップショット」を選択します。</p>
+<p>表示されているスナップショットを選択し「アクション」＞「削除」をクリックします。</p>
+<p class="image-container"><img style="width: 516.50px" src="img/479beb204399c0cc.png"></p>
+<p>削除の確認ダイアログが表示されるので「はい、削除する」をクリックします。</p>
+<p class="image-container"><img style="width: 470.50px" src="img/d3dcc25449d6f31e.png"></p>
+<p>以上でEBSスナップショットの削除は完了です。</p>
+<h2 is-upgraded><strong>ELB</strong></h2>
+<p>ロードバランサーのメニューより「elb」を選択し「アクション」＞「削除」をクリックします。</p>
+<p class="image-container"><img style="width: 497.02px" src="img/8f16e3a43f5a747f.png"></p>
+<p>削除の確認ダイアログが表示されるので「はい、削除する」をクリックします。</p>
+<p class="image-container"><img style="width: 456.50px" src="img/be29830386f74fd8.png"></p>
+<p>ターゲットグループも同様に削除しましょう。</p>
+<p>ターゲットグループのメニューより「webserver」を選択し「Actions」＞「Delete」をクリックします。</p>
+<p class="image-container"><img style="width: 540.50px" src="img/83039505384364af.png"></p>
+<p>削除の確認ダイアログが表示されるので「Yes、delete」をクリックします。</p>
+<p class="image-container"><img style="width: 520.50px" src="img/211dedc67e199aa.png"></p>
+<p>以上でターゲットグループの削除は完了です。</p>
+<h2 is-upgraded>VPC</h2>
+<p>最後にVPCを削除します。</p>
+<p>VPCコンソールにアクセスします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img/acfbb167eaa30eb.png"></p>
+<p>VPC一覧を表示し、今回作成した「handson-vpc」を選択し「アクション」＞「VPCの削除」をクリックします。</p>
+<p class="image-container"><img style="width: 598.50px" src="img/ba939507d0f7655a.png"></p>
+<p>VPCを削除すると依存リソース(サブネット、インターネットゲートウェイ、セキュリティグループ等)も同時に削除されます。</p>
+<p>削除対象を確認し問題なければ確認フィールドに「削除」と入力し、「削除」をクリックします。</p>
+<p class="image-container"><img style="width: 570.50px" src="img/8ee7917d8176e7fa.png"></p>
+<p>以上でハンズオンで作成したすべてのリソースの削除が完了しました。</p>
+<p>お疲れ様でした！</p>
+
 
       </google-codelab-step>
     
-      <google-codelab-step label="参考1：EC2 Instance Connect" duration="5">
-        
+      <google-codelab-step label="参考" duration="5">
+        <h2 is-upgraded><a href="https://aws.amazon.com/jp/rds/features/multi-az/" target="_blank">RDSマルチAZ配置</a></h2>
+<p>RDS DBインスタンスをマルチAZ配置とすることで、データベース層を冗長化し、対障害性を持たせることができます。</p>
+<h2 is-upgraded><a href="https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-instance-connect-methods.html" target="_blank">EC2 Instance Connect</a></h2>
+<p>今回はインスタンスにログインしないためSSHキーペアは作成しませんでしたが、EC2 Instance Connectを使用するとブラウザベースでキーペアなしでもインスタンスに接続することができます。</p>
 
-      </google-codelab-step>
-    
-      <google-codelab-step label="参考2：RDSのマルチAZ配置" duration="5">
-        
 
       </google-codelab-step>
     
